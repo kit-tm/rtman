@@ -1,0 +1,17 @@
+{
+  "config": {
+    "show_positive": true,
+    "lossy": false
+  },
+  "receive": [
+    6500
+  ],
+  "send": [
+    {
+      "host": "localhost",
+      "port": 6500,
+      "size": 1024,
+      "interval": 1000000000
+    }
+  ]
+}

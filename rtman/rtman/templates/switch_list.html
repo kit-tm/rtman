@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RTman - Switches</title>
+</head>
+<body>
+
+<h1>Switches</h1>
+
+{% for switch in switches %}
+<h2>{{switch.name}}</h2>
+<a href="/switch/{{switch.name}}/flows">Flows</a>
+{% endfor %}
+
+</body>
+</html>

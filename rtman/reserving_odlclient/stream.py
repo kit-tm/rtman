@@ -1,0 +1,158 @@
+"""
+RTman stream model.
+
+This is the stream model of the reserving ODL client.
+
+Streams are uniquely identified by their UDP port.
+
+All streams are multicast streams.
+A multicast stream consists of many partial streams: one partial stream per receiver.
+Thus, a multicast stream is the union of all partial streams with same stream identifier.
+
+A unicast stream is essentially a multicast stream with a single receiver.
+"""
+
+from base_odlclient.node import Host
+
+
+class PartialStream(object):
+    """
+    A MultiStream (1:n) is a set of many partial streams (1:1).
+
+    This means that a partial stream has 1 sender and 1 receiver.
+    Additionally, A Path of PartialStreamHops can be stored here after
+    a path has been chosen.
+    """
+    __slots__ = [
+        "_receiver",
+        "_parent"
+    ]
+
+    @property
+    def identifier(self):
+        return "%s::%s" % (self._parent.name, self.receiver.node_id)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return (self._receiver == other._receiver) and \
+               (self._parent == other._parent)
+
+    def __init__(self, receiver, parent):
+        """
+
+        :type parent: MultiStream
+        """
+        super(PartialStream, self).__init__()
+        self._parent = parent
+        self._receiver = receiver
+
+    def __repr__(self):
+        return "PartialStream[%s  :: %s -> %s]" % (self.parent.name, self.sender.node_id, self._receiver.node_id)
+
+    @property
+    def sender(self):
+        """
+        get the sender of the partial stream
+        :return: sender of the partial stream
+        :rtype: Host
+        """
+        return self._parent.sender
+
+    @property
+    def parent(self):
+        """
+
+        :return:
+        :rtype: MultiStream
+        """
+        return self._parent
+
+    @property
+    def receiver(self):
+        """
+
+        :return: Receiver of the partial stream.
+        :rtype: Host
+        """
+        return self._receiver
+
+
+class MultiStream(object):
+    """
+    A multicast stream that is sent from one sender to many (1..n) receivers.
+
+    Consists of
+      - udp destination port: udp port and unique stream identifier
+      - sender
+      - partials: for each receiver, there is a partial stream, i.e., a unicast stream.
+      - name: unique stream identifier in RTman
+    """
+    __slots__ = ("_sender", "_partials", "_name", "_udp_dest_port")
+
+    _partialstream_class=PartialStream
+
+    def __init__(self, sender, receivers, udp_dest_port, name=None):
+        super(MultiStream, self).__init__()
+
+        self._sender = sender
+        self._udp_dest_port = udp_dest_port
+        self._partials = [self._partialstream_class(r, self) for r in receivers]
+
+        if name is None:
+            self._name = "%s_%d" % (self._sender.node_id, self._udp_dest_port)
+        else:
+            self._name = name
+
+    def __repr__(self):
+        return "MultiStream[%s  :: %s -> %d]" % (self.name, self._sender.node_id, self._udp_dest_port)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return (self._sender == other._sender) and \
+               (self._udp_dest_port == other._udp_dest_port) and \
+               (self._name == other._name)
+
+    @property
+    def name(self):
+        """
+        The name of a stream uniquely identifies the stream in this application.
+        The stream's name
+        :rtype: str
+        """
+        return self._name
+
+    @property
+    def sender(self):
+        """
+        :return: sender of the multicast stream
+        :rtype: Host
+        """
+        return self._sender
+
+    @property
+    def udp_dest_port(self):
+        """
+        The UDP destination port that is used for all frames of the stream.
+        This is used for SDN Flow Table Matching as well as a unique identifier of frames of the stream.
+        :return: UDP destination port associated with this multicast stream
+        :rtype: int
+        """
+        return self._udp_dest_port
+
+    @property
+    def partials(self):
+        """
+        :return: all partial streams of the multicast stream
+        :rtype: PartialStream
+        """
+        return set(self._partials)
+
+    @property
+    def receivers(self):
+        """
+        :return: All receivers of the multicast stream
+        :rtype: list(Host)
+        """
+        return set(p.receiver for p in self._partials)

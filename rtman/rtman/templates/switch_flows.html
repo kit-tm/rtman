@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RTman - {{switch_name}} - Flows</title>
+</head>
+<body>
+
+<h1>{{switch_name}} - Flows</h1>
+
+{% for flow in flows %}
+<h2>{{flow.id}}</h2>
+
+<pre>{%for k, v in flow.others.iteritems() %}{{k}}: {{v}}
+{% endfor %}
+
+{% for m in flow.match %}{{m[0]}}: {{m[1]}}
+{% endfor %}
+
+{% for i in flow.instructions %}{{i[0]}}: {{i[1]}}
+{% endfor %}</pre>
+
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+{
+  "doc": [
+    "                s13 == s14",
+    "              //          \\",
+    "           s22              s25",
+    "         //   \\          //   \\",
+    "h1 == s31       s33 == s34       s36  == h2",
+    "         \\   //          \\   //",
+    "           s42              s45",
+    "              \\          //",
+    "                s53 == s54"
+  ],
+  "config": {
+    "odl_host": "192.168.33.1",
+    "___odl_host": "localhost",
+    "odl_port": 6633,
+    "mininet_host": "mininet-vm",
+    "___mininet_host": "localhost"
+  },
+  "topology": {
+    "hosts": {
+      "h1": "12:23:34:45:56:67",
+      "h2": "aa:bb:cc:dd:ee:aa"
+    },
+    "switches": [
+      "s13", "s14",
+      "s22", "s25",
+      "s31", "s33", "s34", "s36",
+      "s42", "s45",
+      "s53", "s54"
+    ],
+    "links": [
+      ["h1",  "s31"],
+      ["s31", "s22"], ["s31", "s42"],
+      ["s22", "s13"], ["s22", "s33"], ["s42", "s33"], ["s42", "s53"],
+      ["s13", "s14"], ["s33", "s34"], ["s53", "s54"],
+      ["s14", "s25"], ["s34", "s25"], ["s34", "s45"], ["s54", "s45"],
+      ["s25", "s36"], ["s45", "s36"],
+      ["s36", "h2" ]
+    ]
+  },
+  "streams": [
+    {
+      "port": 6000,
+      "sender": "h1",
+      "receivers": ["h2"],
+      "traffic": {
+        "time_offset": 0,
+        "time_interarrival": 2000000000,
+        "framesize": 1024
+      },
+      "name": "1---2---6000"
+    }, {
+      "port": 6001,
+      "sender": "h1",
+      "receivers": ["h2"],
+      "traffic": {
+        "time_offset": 0,
+        "time_interarrival": 1000000000,
+        "framesize": 1024
+      },
+      "name": "1---2---6001"
+    }, {
+      "port": 6002,
+      "sender": "h1",
+      "receivers": ["h2"],
+      "traffic": {
+        "time_offset": 0,
+        "time_interarrival": 1000000000,
+        "framesize": 1024
+      },
+      "name": "1---2---6002"
+    }, {
+      "port": 6003,
+      "sender": "h1",
+      "receivers": ["h2"],
+      "traffic": {
+        "time_offset": 0,
+        "time_interarrival": 1000000000,
+        "framesize": 1024
+      },
+      "name": "1---2---6003"
+    }
+  ]
+}

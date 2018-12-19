@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Topology Graph</title>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+
+body {
+  margin: 8px;
+}
+
+svg {
+  border: 1px solid black;
+  float: left;
+}
+
+div#streamlist {
+  float: right;
+  width: auto;
+  padding-right: 1cm;
+  padding-left: 0cm;
+}
+div#streamlist ul, div#streamlist ul li {
+  margin-left: 0cm;
+  padding-left: 0cm;
+}
+
+.links line, .links path {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+.streams line, .streams path {
+  fill: none;
+  stroke-width: 4px;
+  opacity: .8;
+}
+
+.streams.hidden {
+  display: none;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+td {
+  vertical-align: top
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: left;
+  padding: 0.2cm;
+  font: 14px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 2mm;
+  pointer-events: none;
+}
+
+</style>
+
+</head>
+<body>
+
+<svg width="300" height="300">
+    <defs>
+        {% for color in streamcolors %}
+    <marker
+      id="arrow-start-{{color}}"
+      markerUnits="strokeWidth"
+      markerWidth="12"
+      markerHeight="12"
+      viewBox="0 0 12 12"
+      refX="6"
+      refY="6"
+      orient="auto">
+      <path d="M10,4 L8,6 L10,8 L6,6 L10,4" style="fill: #{{color}}"></path>
+    </marker>
+    <marker
+      id="arrow-end-{{color}}"
+      markerUnits="strokeWidth"
+      markerWidth="12"
+      markerHeight="12"
+      viewBox="0 0 12 12"
+      refX="6"
+      refY="6"
+      orient="auto">
+      <path d="M2,4 L4,6 L2,8 L6,6 L2,4" style="fill: #{{color}}"></path>
+    </marker>
+        {% endfor %}
+  </defs>
+</svg>
+
+
+<div id="streamlist">
+    <h2>Streams</h2>
+    <ul id="ulstreamlist" style="list-style-type: none;">
+    </ul>
+</div>
+
+
+    <script>
+
+        var node_size = {{node_size}};
+        var linkdistance = {{linkdistance}};
+        var linkdistance_hostlink = {{linkdistance_hostlink}};
+        var gravity = {{gravity}};
+        var color_switches = "{{color_switches}}";
+        var color_hosts = "{{color_hosts}}";
+        var streamcolors = {{streamcolors|safe}};
+
+
+        var color_index = streamcolors.length-1;
+        function getcolor() {
+          color_index = (color_index + 1) % streamcolors.length;
+          return streamcolors[color_index];
+        }
+
+
+
+        var svg = d3.select("svg")
+
+        var tooltipdiv = d3.select("body").append("div")
+             .attr("class", "tooltip")
+             .style("opacity", 0);
+
+
+
+
+        var simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().distance(function(d){return d.is_host_link ? linkdistance_hostlink : linkdistance}).id(function(d) { return d.id; }))
+            .force("charge", d3.forceManyBody().strength(function(d){return gravity}))
+
+
+        var onresize = function() {
+            var width = document.body.clientWidth-document.getElementById("streamlist").offsetWidth-16; //16: 2*body.margin
+            var height = $(window).height()-16; //16: 2*body.margin
+
+            svg.attr("width", width);
+            svg.attr("height", height);
+
+            simulation
+               .force("center", d3.forceCenter(width / 2, height / 2))
+               .restart();
+        }
+
+        d3.json("graph/topology.json", function(error, graph) {
+          if (error) throw error;
+
+          var nodes_dict = {};
+          for (var n in graph.nodes) {
+            nodes_dict[graph.nodes[n].id] = graph.nodes[n];
+          }
+
+          var leftpath = false;
+          var pathdirs = {};
+          for (var streamname in graph.streams) {
+            var bowfactor = 4*Math.random()+1
+            for (var hopid in graph.streams[streamname]) {
+              graph.streams[streamname][hopid].source = nodes_dict[graph.streams[streamname][hopid].source];
+              graph.streams[streamname][hopid].target = nodes_dict[graph.streams[streamname][hopid].target];
+              graph.streams[streamname][hopid].leftpath = leftpath;
+              graph.streams[streamname][hopid].radiusfactor = bowfactor; //increase for smaller arc, decrease for greater arc
+            }
+            pathdirs[streamname] = leftpath;
+            leftpath = !leftpath;
+          }
+
+
+          var link = svg.append("g")
+              .attr("class", "links")
+            .selectAll("line")
+            .data(graph.links)
+            .enter().append("line")
+              .attr("stroke-width", function(d) { return 2; });
+
+          link.append("title")
+              .text(function(d) { return d.cost_a + ", " + d.cost_b; });
+
+
+          var streams = {};
+          var streamsul = $("#ulstreamlist")
+          var streamnames = Object.keys(graph.streams).sort();
+          for (var i in streamnames) {
+              var streamname = streamnames[i];
+              var c = getcolor();
+              streamsul.append($('<li><input type="checkbox" id="checkbox-'+streamname+'" /><label for="checkbox-'+streamname+'" style="color: #'+c+';">'+streamname+'</label></li>'));
+              streams[streamname] = svg.append("g")
+                  .attr("class", function(d){return "streams hidden g-"+streamname})
+                  .selectAll("line")
+                  .data(graph.streams[streamname])
+                  .enter().append("path")
+                  .attr(pathdirs[streamname] ? "marker-end" : "marker-start","url(#arrow-"+(pathdirs[streamname] ? "end-" : "start-")+c+")");
+              $('#checkbox-'+streamname).attr("streamname", streamname).change(function(){
+                   var s = $(this).attr("streamname");
+                  if (this.checked) {
+                   $(".g-"+s).removeClass("hidden");
+                  } else {
+                   $(".g-"+s).addClass("hidden");
+                  }
+              });
+              document.styleSheets[0].addRule(".g-"+streamname+" line, .g-"+streamname+" path", "stroke: #"+c+";");
+              console.log(c);
+          }
+
+
+          var node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("circle")
+            .data(graph.nodes)
+            .enter().append("circle")
+              .attr("r", node_size)
+              .attr("fill", function(d) { return d.is_host ? color_hosts : color_switches })
+              .on("mouseover", function(d) {
+                tooltipdiv.transition()
+                  .duration(200)
+                  .style("opacity", .9);
+                tooltipdiv.html(d.id)
+                  .style("left", (d3.event.pageX) + "px")
+                  .style("top", (d3.event.pageY - 28) + "px");	;
+              })
+              .on("mouseout", function(d) {
+                tooltipdiv.transition()
+                  .duration(500)
+                  .style("opacity", 0);
+              })
+              .call(d3.drag()
+                  .on("start", dragstarted)
+                  .on("drag", dragged)
+                  .on("end", dragended)
+              );
+
+
+          //node.append("title")
+          //    .text(function(d) { return d.id; });
+
+          simulation
+              .nodes(graph.nodes)
+              .on("tick", ticked);
+
+          simulation.force("link")
+              .links(graph.links);
+
+          function ticked() {
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+            for (var streamname in streams) {
+                streams[streamname]
+                  .attr("d", function(d) {
+                      var dx = d.target.x - d.source.x,
+                          dy = d.target.y - d.source.y,
+                          dr = Math.sqrt(dx * dx + dy * dy)*d.radiusfactor;
+                      return d.leftpath ?
+                          "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y :
+                          "M" + d.target.x + "," + d.target.y + "A" + dr + "," + dr + " 0 0,1 " + d.source.x + "," + d.source.y;
+
+                  });
+            }
+
+            node
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+          }
+        });
+
+        function dragstarted(d) {
+          if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+
+        function dragged(d) {
+          d.fx = d3.event.x;
+          d.fy = d3.event.y;
+        }
+
+        function dragended(d) {
+          if (!d3.event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
+
+
+        $(window).resize(onresize());
+        window.onload = onresize;
+        setTimeout(onresize, 1000);
+    </script>
+</body>
+</html>
