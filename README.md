@@ -2,9 +2,8 @@
 
 RTman ist the RT traffic manager for IRT streams as developed in AP4. We provide
 
-* The SDN app
-* Instructions for installing the SDN controller
-* Scripts for starting RTman in different environments
-* A management for a mininet-based network (used for evaluation).
+* The SDN app: [rtman](rtman)
+* Instructions for installing and running the SDN controller: [controller](controller)
+* A management for a mininet-based test network (no TAS support!): [mininet](mininet)
 
-Please refer to the individual RADME files for more information:
+Please refer to the individual RADME files for more information.
