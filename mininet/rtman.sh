@@ -8,4 +8,4 @@ config=$(realpath $config)
 wireshark_script=$(realpath wireshark.sh)
 
 cd ../rtman
-python start_from_config.py ${config} ${wireshark_script}
+python start_from_mininet_config.py ${config} ${wireshark_script}
