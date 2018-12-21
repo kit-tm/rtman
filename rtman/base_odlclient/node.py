@@ -325,7 +325,7 @@ class SwitchConnector(ODLNodeConnector):
         This is why this will throw a NotImplementedError.
         :return:
         """
-        raise NotImplementedError()
+        pass
 
     @property
     def interface_name(self):

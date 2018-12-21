@@ -68,7 +68,9 @@ class Endpoint(object):
         run the endpoint in an own thread.
         :return:
         """
-        Thread(target=self._run).start()
+        t = Thread(target=self._run)
+        t.daemon = True
+        t.start()
 
     def _run(self):
         """
