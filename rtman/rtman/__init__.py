@@ -14,10 +14,6 @@ import json
 from rtman.web import RTmanWeb
 
 
-AUTO_ADD_STREAMS = True
-AUTO_CLEAN_STREAMS = True
-
-
 class MacFix(IRTOdlClient):
     """
     ODLclient which fixes the mac assignment problem in mininet
@@ -76,20 +72,42 @@ class RTman(object):
 
     Note: instead of changing the ODLClient used here, change the superclass of MacFix.
     """
-    __slots__ = ("_odl_client",
+    __slots__ = ("_odl_client", "_web",
 
                  "_wireshark_script", "_interactive_lock")
 
-    def __init__(self, wireshark_script=None, *args, **kwargs):
+    def __init__(self, wireshark_script=None, web_address="localhost", web_port=8080, *args, **kwargs):
         """
         :param args: args for ODLClient
         :param str wireshark_script: path to a script that takes an interface name as argument and launches wireshark
         for that interface
+        :param str web_address: Address/hostname to use when binding TCP socket for web server
+        :param int web_port: TCP port for web server
         :param kwargs: kwargs for ODLClient.
         """
         self._wireshark_script = wireshark_script
         self._odl_client = MacFix(scheduler_cls=DijkstraBasedScheduler, *args, **kwargs)
         self._interactive_lock = Lock()
+
+        self._odl_client._build_nodes()
+        self._web = RTmanWeb(self, web_address, web_port)
+
+    def start(self):
+        """
+
+        :return:
+        """
+        self._odl_client._build_nodes()
+        self._web.start()
+
+    def stop(self, cleanup=True):
+        if cleanup:
+            try:
+                # fixme: crash when topology changes before this call
+                self._odl_client.clean_up_flows()
+            except:
+                traceback.print_exc()
+        self._web.stop()
 
     @property
     def odl_client(self):
@@ -100,55 +118,25 @@ class RTman(object):
         """
         return self._odl_client
 
-    def run_interactive(self, multistreams, auto_add_streams=True, web_address="localhost", web_port=8080):
+    def get_shell(self, additional_vars):
         """
-        Batch process to:
-        Start the ODLClient and let it build its nodes.
-        Start a web server.
-        Add a bunch of streams to ODLClient (optional)
         show an interactive console with access to this object and the stream objects.
-        Clean up and close program after the user has disconnected from the console ( Ctrl-D or exit() ).
 
-        :param dict[str, MultiStream] multistreams: multicast streams available for console
-        :param bool auto_add_streams: whether to add those streams to ODLClient automatically
-        :param str web_address: Address/hostname to use when binding TCP socket for web server
-        :param int web_port: TCP port for web server
+        :param dict additional_vars: additional variables for interactive shell
         """
         with self._interactive_lock:
-            web = RTmanWeb(self)
-            try:
-                self._odl_client._build_nodes()
+            console_vars = {
+                "rtman": self,
+                "odl_client": self._odl_client,
+                "wireshark": self.wireshark
+            }
+            console_vars.update(additional_vars)
 
-                if multistreams:
-                    streams = set.union(*(m.partials for m in multistreams.itervalues()))
-                else:
-                    streams = set()
 
-                try:
-                    if auto_add_streams:
-                        for stream in streams:
-                            self._odl_client.add_partialstream(stream)
-                    print "Deploying flows"
-                    self._odl_client.update_and_deploy_schedule()
-
-                except:
-                    traceback.print_exc()
-
-                web.start(web_address, web_port)
-
-                get_console({
-                    "multistreams": multistreams,
-                    "streams": streams,
-                    "rtman": self,
-                    "odl_client": self._odl_client,
-                    "wireshark": self.wireshark
-                })
-            except:
-                traceback.print_exc()
-            finally:
-                if AUTO_CLEAN_STREAMS:
-                    self._odl_client.clean_up_flows()
-                web.stop()
+            get_console(console_vars, greeting="""
+Entering interactive console. Press ^D or type exit() to exit.
+Available variables:
+  """+", ".join(sorted(console_vars.iterkeys())))
 
     def wireshark(self, interface, display_stdout=False):
         """
@@ -172,67 +160,3 @@ class RTman(object):
             if not display_stdout:
                 devnull = None
             subprocess.Popen(("bash",)+self._wireshark_script+(interface_name,), stdout=devnull, stderr=devnull)
-
-    @classmethod
-    def run_from_config_file(cls, filename, wireshark_script):
-        """
-        Open a topology.json, create an RTman instance, and run RTman based on this config file with run_interactive.
-
-        :param str filename: path to topology.json
-        :param str wireshark_script: path to wireshark script for RTman constructor.
-        :return:
-
-        #fixme: separate from rtman implementation - read config externally and hand over via argparse
-        """
-        with open(filename, "r") as f:
-            config = json.loads(f.read())
-
-        rtman = RTman(
-            mac_addresses=config["topology"]["hosts"].values(),
-            hostname=config["config"]["odl_host"],
-            port=8181,
-            wireshark_script=wireshark_script
-        )
-
-        def host_name_to_host(hostname_str):
-            """
-            let's say the topology.json has a host entry like:
-
-              "topology": {
-                "hosts": {
-                  "h1": "12:23:34:45:56:67",
-
-            and you want to get RTman's ODLClient's host object corresponding with h1, but all you have is the string "h1",
-            then this function is the solution for you!
-
-            :param str hostname_str: hostname in mininet
-            :return: Host Object for ODLClient
-            :rtype: Host
-            """
-            return rtman._odl_client.get_host_by_mac(
-                rtman._odl_client.convert_mac_address(
-                    config["topology"]["hosts"][
-                        hostname_str
-                    ]
-                )
-            )
-
-        multistreams = {
-            stream_desc["name"]: IRTMultiStream(
-                sender=host_name_to_host(stream_desc["sender"]),
-                receivers=[host_name_to_host(r) for r in stream_desc["receivers"]],
-                udp_dest_port=stream_desc["port"],
-                name=stream_desc.get("name", None),
-                transmission_schedule=RegularTransmissionSchedule(
-                    frame_size=stream_desc["traffic"]["framesize"],
-                    interarrival_time=stream_desc["traffic"]["time_interarrival"],
-                    offset=stream_desc["traffic"]["time_offset"]
-                )
-            ) for stream_desc in config["streams"]
-        }
-
-        rtman.run_interactive(
-            multistreams=multistreams,
-            auto_add_streams=AUTO_ADD_STREAMS,
-            web_address="localhost"
-        )

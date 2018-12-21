@@ -116,10 +116,17 @@ class RTmanWeb(object):
     Opens an HTTPServer and provides a method for handling requests.
     """
 
-    __slots__ = ("_rtman", "_urls", "_webserver")
+    __slots__ = ("_rtman", "_urls", "_webserver", "_tcp_binding")
 
-    def __init__(self, rtman):
+    def __init__(self, rtman, hostname="localhost", port=8080):
+        """
+
+        :param rtman:
+        :param str hostname: hostname to bind to
+        :param int port: tcp port to bind to
+        """
         self._rtman = rtman
+        self._tcp_binding = (hostname, port)
 
         # define urls like in django's urls.py
         self._urls = (
@@ -130,15 +137,13 @@ class RTmanWeb(object):
             (r'^/graph/topology.json$', "GET", self._graph_topology_json)
         )
 
-    def start(self, hostname="localhost", port=8080):
+    def start(self):
         """
         called to start the webserver
 
-        :param str hostname: hostname to bind to
-        :param int port: tcp port to bind to
         :return:
         """
-        self._webserver = RTmanWebServer(self, (hostname, port))
+        self._webserver = RTmanWebServer(self, self._tcp_binding)
         t = Thread(target=self._webserver.serve_forever)
         t.daemon = True
         t.start()
