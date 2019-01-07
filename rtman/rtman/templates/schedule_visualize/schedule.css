@@ -1,0 +1,13 @@
+{% for streamname, color in streamcolors.items() %}
+td.transmit_{{streamname}} {
+    background-color: #{{color}};
+    width: {{slot_width}};
+    height: {{slot_width}};
+}
+{% endfor %}
+
+td.no_transmit {
+    background-color: #dfdfdf;
+    width: {{slot_width}};
+    height: {{slot_width}};
+}

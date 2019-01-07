@@ -9,6 +9,12 @@ but are exchangeble, so that every schedule can create its own copies of them.
 class Queue(object):
     __slots__ = ("_queue_id", "_switch_connector")
 
+    def __str__(self):
+        return "%s::%d" % (self._switch_connector.connector_id, self._queue_id)
+
+    def __repr__(self):
+        return "Queue -- %s" % self.__str__()
+
     def __init__(self, queue_id, switch_connector):
         self._queue_id = queue_id
         self._switch_connector = switch_connector

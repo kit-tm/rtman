@@ -5,7 +5,7 @@ a global transmission cycle time is set.
 
 """
 from base_odlclient.node import Host, Switch
-from irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper
+from irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper, SwitchWrapper
 from reserving_odlclient.stream import MultiStream, PartialStream
 from node_wrapper import Topology
 
@@ -22,7 +22,7 @@ class Schedule(object):
     Note that if two partial streams are sent over the same switch connector, they refer to the same TransmisisonPoint
     """
 
-    __slots__ = ("_scheduler", "_transmission_points",
+    __slots__ = ("_scheduler", "_transmission_points", "_cycle_length",
 
                  "_cache_invalid",
                  "_cached_transmission_points_by_switch_connector",
@@ -35,6 +35,11 @@ class Schedule(object):
         self._scheduler = scheduler
         self._transmission_points = set()  # type: Set[TransmissionPoint]
         self._cache_invalid = True
+        self._cycle_length = None
+
+    @property
+    def cycle_length(self):
+        return self._cycle_length
 
     def add_transmission_point(self, transmission_point):
         """
@@ -184,13 +189,13 @@ class TransmissionPoint(object):
     def __repr__(self):
         return "Transmission: %s at %s at %s" % (next(iter(self._partial_streams)).parent.name,
                                                  self._switch_connector.connector_id,
-                                                 ", ".join(self._transmission_times))
+                                                 ", ".join(str(i) for i in self._transmission_times))
 
     __slots__ = ("_switch_connector", "_partial_streams", "_transmission_times")
 
     def __init__(self, switch_connector, partial_streams, transmission_times):
         self._switch_connector = switch_connector  # type: SwitchConnectorWrapper
-        self._partial_streams = partial_streams  # type: Set[PartialStream]
+        self._partial_streams = partial_streams  # type: set[PartialStream]
         self._transmission_times = transmission_times  # type: Iterable[Tuple[int, int]]
 
     @property
@@ -207,6 +212,10 @@ class TransmissionPoint(object):
         return self._partial_streams.copy()
 
     @property
+    def multistream(self):
+        return next(iter(self._partial_streams)).parent
+
+    @property
     def transmission_times(self):
         return set(self._transmission_times)
 
@@ -219,11 +228,31 @@ class Configuration(object):
     Used for combining these two for handovers between classes
     """
 
-    __slots__ = ("_flows", "_tas_entries")
+    __slots__ = ("_flows", "_tas_entries", "_scheduler", "_cycle_length")
 
-    def __init__(self, flows, tas_entries):
+    def __init__(self, scheduler, flows, tas_entries, cycle_length):
+        """
+
+        :param flows:
+        :param Set[TASEentry] tas_entries:
+        """
+        self._scheduler = scheduler
         self._flows = flows
-        self._tas_entries = tas_entries
+        self._tas_entries = {}
+        self._cycle_length = cycle_length
+        for tas_entry in tas_entries:
+            queue = tas_entry.queue
+            switch_connector = queue.switch_connector  # type: SwitchConnectorWrapper
+            switch = switch_connector.parent  # type: SwitchWrapper
+            if switch.node_id in self._tas_entries:
+                if switch_connector.connector_id in self._tas_entries:
+                    assert queue.queue_id not in self._tas_entries[switch.node_id][switch_connector.connector_id]
+                    self._tas_entries[switch.node_id][switch_connector.connector_id][queue.queue_id] = tas_entry
+                else:
+                    self._tas_entries[switch.node_id][switch_connector.connector_id] = {queue.queue_id: tas_entry}
+            else:
+                self._tas_entries[switch.node_id] = {switch_connector.connector_id: {queue.queue_id: tas_entry}}
+
 
     @property
     def flows(self):
@@ -233,6 +262,10 @@ class Configuration(object):
     def tas_entries(self):
         return self._tas_entries
 
+    @property
+    def cycle_length(self):
+        return self._cycle_length
+
 
 class TASEntry(object):
     """
@@ -241,6 +274,15 @@ class TASEntry(object):
     essentially holds a reference to the queue, and a set of open gate intervals (set of (start, end) tuples)
     """
     __slots__ = ("_queue", "_gate_open_intervals")
+
+    def toJSON(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "%s  --  %s" % (self._queue.__str__(), " , ".join(str(i) for i in sorted(self._gate_open_intervals)))
+
+    def __repr__(self):
+        return super(TASEntry, self).__repr__()
 
     def __init__(self, queue, gate_open_intervals):
         self._queue = queue
@@ -252,6 +294,10 @@ class TASEntry(object):
 
     @property
     def queue(self):
+        """
+        :trype: Queue
+        :return:
+        """
         return self._queue
 
 
@@ -346,7 +392,7 @@ class Scheduler(object):
         """
         schedule = self._schedule
         # do fancy stuff
-        self._configuration = Configuration(None, None)
+        self._configuration = Configuration(self, None, None, None)
         raise NotImplementedError()
 
     def calculate_new_configuration(self):

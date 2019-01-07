@@ -66,3 +66,7 @@ class IRTOdlClient(ReservingODLClient):
     @property
     def schedule(self):
         return self._scheduler._schedule
+
+    @property
+    def configuration(self):
+        return self._scheduler._configuration

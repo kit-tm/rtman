@@ -1,0 +1,9 @@
+{% for multistream_name in entries %}
+
+    {% if multistream_name %}
+        <td class="transmit_{{multistream_name}}" title="{{multistream_name}}"></td>
+    {% else %}
+        <td class="no_transmit"></td>
+    {% endif %}
+
+{% endfor %}

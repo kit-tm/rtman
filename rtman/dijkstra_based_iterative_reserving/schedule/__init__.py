@@ -87,9 +87,7 @@ class DijkstraBasedScheduler(Scheduler):
     TOPOLOGY_CLS = DijkstraTopology
     SCHEDULE_CLS = PathBasedSchedule
 
-    __slots__ = ("_cycle_time",
-
-                 "_multistream_mpls_labels",
+    __slots__ = ("_multistream_mpls_labels",
 
                  "_flow_priority")
 
@@ -192,7 +190,7 @@ class DijkstraBasedScheduler(Scheduler):
                         MPLSTransmissionPoint(
                             connector,
                             partialstreams,
-                            (transmission_slot, transmission_slot+1),
+                            {(transmission_slot, transmission_slot+1)},
                             is_first=(i == 1),
                             is_to_host=isinstance(next_neighbor, HostWrapper)
                         )
@@ -201,9 +199,10 @@ class DijkstraBasedScheduler(Scheduler):
 
                 transmission_slot += 1
 
+                new_schedule._cycle_length = transmission_slot
+
         # save results to self
         self._schedule = new_schedule
-        self._cycle_time = transmission_slot
 
     def _generate_configuration_from_schedule(self):
         flows = set()
@@ -279,7 +278,7 @@ class DijkstraBasedScheduler(Scheduler):
                     transmission_times
                 ))
 
-        self._configuration = Configuration(flows, tas_entries)
+        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length)
 
 
     def _calculate_pathset(self, partialstreams, existing_paths):

@@ -6,6 +6,7 @@
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>{% with slot_width="0.2cm" %}{% include "schedule_visualize/schedule.css" %}{% endwith %}</style>
 
 <style>
 
@@ -70,9 +71,11 @@ div.tooltip {
 </head>
 <body>
 
+{{navigation|safe}}
+
 <svg width="300" height="300">
     <defs>
-        {% for color in streamcolors %}
+        {% for color in streamcolors.values() %}
     <marker
       id="arrow-start-{{color}}"
       markerUnits="strokeWidth"
@@ -115,18 +118,19 @@ div.tooltip {
         var gravity = {{gravity}};
         var color_switches = "{{color_switches}}";
         var color_hosts = "{{color_hosts}}";
-        var streamcolors = {{streamcolors|safe}};
+        var streamcolors = {
+        {% for streamname, color in streamcolors.items() %}
+            "{{streamname}}": "{{color}}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+        };
 
+        var tas_config = {
+        {% for switch_id, switchentry in tas_config.items() %}
+            "{{switch_id}}": `<table><tbody>{% include "schedule_visualize/switch_entry.html" %}</table></tbody>`{% if not loop.last %},{% endif %}
+        {% endfor %}
+        };
 
-        var color_index = streamcolors.length-1;
-        function getcolor() {
-          color_index = (color_index + 1) % streamcolors.length;
-          return streamcolors[color_index];
-        }
-
-
-
-        var svg = d3.select("svg")
+        var svg = d3.select("svg");
 
         var tooltipdiv = d3.select("body").append("div")
              .attr("class", "tooltip")
@@ -191,7 +195,7 @@ div.tooltip {
           var streamnames = Object.keys(graph.streams).sort();
           for (var i in streamnames) {
               var streamname = streamnames[i];
-              var c = getcolor();
+              var c = streamcolors[streamname]
               streamsul.append($('<li><input type="checkbox" id="checkbox-'+streamname+'" /><label for="checkbox-'+streamname+'" style="color: #'+c+';">'+streamname+'</label></li>'));
               streams[streamname] = svg.append("g")
                   .attr("class", function(d){return "streams hidden g-"+streamname})
@@ -223,7 +227,7 @@ div.tooltip {
                 tooltipdiv.transition()
                   .duration(200)
                   .style("opacity", .9);
-                tooltipdiv.html(d.id)
+                tooltipdiv.html("<b>" + d.id + "</b><br/><br/><small>" + tas_config[d.id] + "</small>")
                   .style("left", (d3.event.pageX) + "px")
                   .style("top", (d3.event.pageY - 28) + "px");	;
               })
@@ -238,9 +242,6 @@ div.tooltip {
                   .on("end", dragended)
               );
 
-
-          //node.append("title")
-          //    .text(function(d) { return d.id; });
 
           simulation
               .nodes(graph.nodes)

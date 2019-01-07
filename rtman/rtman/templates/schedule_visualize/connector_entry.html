@@ -1,0 +1,9 @@
+<tr>
+    <td {% if connections is defined %}title="{{connections[connector_id]}}"{% endif %}>{{connector_id}}</td>
+    {% for queue_id, entries in connectorentry.items() %}
+
+        <td>{{queue_id}}</td>
+        {% include "schedule_visualize/queue_entry.html" %}
+
+    {% endfor %}
+</tr>

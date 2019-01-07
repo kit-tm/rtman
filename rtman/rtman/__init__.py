@@ -128,7 +128,8 @@ class RTman(object):
             console_vars = {
                 "rtman": self,
                 "odl_client": self._odl_client,
-                "wireshark": self.wireshark
+                "wireshark": self.wireshark,
+                "json": json
             }
             console_vars.update(additional_vars)
 

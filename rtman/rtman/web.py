@@ -116,7 +116,7 @@ class RTmanWeb(object):
     Opens an HTTPServer and provides a method for handling requests.
     """
 
-    __slots__ = ("_rtman", "_urls", "_webserver", "_tcp_binding")
+    __slots__ = ("_rtman", "_urls", "_webserver", "_tcp_binding", "streamcolors")
 
     def __init__(self, rtman, hostname="localhost", port=8080):
         """
@@ -134,8 +134,39 @@ class RTmanWeb(object):
             (r'^/switch$', "GET", self._switches),
             (r'^/switch/(?P<switch>[a-zA-Z0-9:;_]*)/flows$', "GET", self._switch_flows),
             (r'^/graph$', "GET", self._graph),
-            (r'^/graph/topology.json$', "GET", self._graph_topology_json)
+            (r'^/graph/topology.json$', "GET", self._graph_topology_json),
+            (r'^/schedule$', "GET", self._visualize_schedule)
         )
+
+        self.streamcolors = [  # colors used for stream display. Just some default graph colors.
+                           "3366CC",
+                           "DC3912",
+                           "FF9900",
+                           "109618",
+                           "990099",
+                           "3B3EAC",
+                           "0099C6",
+                           "DD4477",
+                           "66AA00",
+                           "B82E2E",
+                           "316395",
+                           "994499",
+                           "22AA99",
+                           "AAAA11",
+                           "6633CC",
+                           "E67300",
+                           "8B0707",
+                           "329262",
+                           "5574A6",
+                           "3B3EAC"
+                       ]
+
+        env.globals.update(navigation='<a style="" href="/">Home</a>'
+                                      '<a style="margin-left: 1.5cm;" href="/switch">Switches</a>'
+                                      '<a style="margin-left: 1.5cm;" href="/graph">Graph</a>'
+                                      '<a style="margin-left: 1.5cm;" href="/schedule">Schedule</a>'
+                                      '<br/><br/>'
+                           )
 
     def start(self):
         """
@@ -208,35 +239,21 @@ class RTmanWeb(object):
 
         Here, we simply define some parameters for the program.
         """
+        stream_colors = {}
+        i = 0
+        for m in sorted(self._rtman.odl_client.schedule.multistreams):
+            stream_colors[m] = self.streamcolors[i]
+            i = i + 1 % len(self.streamcolors)
+
         return env.get_template("graph.html").render(
-            streamcolors=[  # colors used for stream display. Just some default graph colors.
-                "3366CC",
-                "DC3912",
-                "FF9900",
-                "109618",
-                "990099",
-                "3B3EAC",
-                "0099C6",
-                "DD4477",
-                "66AA00",
-                "B82E2E",
-                "316395",
-                "994499",
-                "22AA99",
-                "AAAA11",
-                "6633CC",
-                "E67300",
-                "8B0707",
-                "329262",
-                "5574A6",
-                "3B3EAC"
-            ],
+            streamcolors=stream_colors,
             node_size=7,  # size of node circles
             linkdistance=5,  # distance of switch-switch links (note: this is a target, and is affected by node gravity)
             linkdistance_hostlink=1,  # distance of host-switch links (note: again just a target, see gravity)
             gravity=-800,  # force that pulls nodes away from each other (yes, this is negative gravity)
             color_switches="#88f",  # color for switch nodes
-            color_hosts="#888"  # color for host nodes
+            color_hosts="#888",  # color for host nodes
+            tas_config=self._tas_config()
         ), None, None
 
     def _graph_topology_json(self):
@@ -244,6 +261,8 @@ class RTmanWeb(object):
 
         :return: all the data needed by graph.html
         """
+
+        tas_config = self._tas_config()
 
         # for nodes, we simply need to know their ids (to reference them in links, and for display) and
         # whether or not they are hosts (if not a host: it's a switch!)
@@ -302,6 +321,69 @@ class RTmanWeb(object):
             "nodes": nodes,
             "streams": streams
         }), 200, {"Content-Type": "application/json"}
+
+    def _visualize_schedule(self):
+
+        stream_colors = {}
+        i = 0
+        for m in sorted(self._rtman.odl_client.schedule.multistreams):
+            stream_colors[m] = self.streamcolors[i]
+            i = i+1 % len(self.streamcolors)
+
+        # we need a dict that links a connector to its target switch.
+        connections = {}
+        for switch in self._rtman.odl_client.switches.itervalues():
+            for connector in switch.list_connectors():
+                if connector.target:
+                    connections[connector.connector_id] = connector.target.parent.node_id
+
+        return env.get_template("schedule_visualizer.html").render(
+            tas_config=self._tas_config(),
+            connections=connections,
+            streamcolors=stream_colors
+        ), None, None
+
+    def _tas_config(self):
+        tas_entries = self._rtman.odl_client.configuration.tas_entries
+        cycle_length = self._rtman.odl_client.configuration.cycle_length
+        tas_config = {}
+
+        for node_id, switch in tas_entries.iteritems():
+            switchentry = {}
+            for connector_id, switch_connector in switch.iteritems():
+                switchconnectorentry = {}
+                for queue_id, tas_entry in switch_connector.iteritems():
+
+                    # find slots where the gate is changed
+                    change_slots = {}
+                    for o, c in tas_entry.gate_open_intervals:
+                        transmissionpoints = self._rtman.odl_client.schedule.transmission_points_by_switch_connector[connector_id]
+                        for i in range(o, c):
+                            for t in transmissionpoints:
+                                for interval in t.transmission_times:
+                                    if interval[0] == i:
+                                        change_slots[i] = t.multistream.name
+                        change_slots[c] = None
+
+                    if change_slots:
+
+                        # now, we want to fill the whole cycle:
+                        current_stream = None
+                        queueentry = []
+                        for slot in range(cycle_length):
+                            if slot in change_slots:
+                                current_stream = change_slots[slot]
+                            queueentry.append(current_stream)
+
+                        switchconnectorentry[queue_id] = queueentry
+
+                if switchconnectorentry:
+                    switchentry[connector_id] = switchconnectorentry
+            if switchentry:
+                tas_config[node_id] = switchentry
+
+        return tas_config
+
 
     def respond_by_urls(self, path, method):
         """

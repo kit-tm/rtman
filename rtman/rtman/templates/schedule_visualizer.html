@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TAS Configuration</title>
+
+    <style>
+
+        {% with slot_width="0.5cm" %}{% include "schedule_visualize/schedule.css" %}{% endwith %}
+
+    </style>
+</head>
+<body>
+
+{{navigation|safe}}
+
+<table><tbody>
+{% for node_id, switchentry in tas_config.items() %}
+
+    {% include "schedule_visualize/switch_entry.html" %}
+    <tr style="height:2mm;"></tr>
+
+{% endfor %}
+</tbody></table>
+
+</body>
+</html>
