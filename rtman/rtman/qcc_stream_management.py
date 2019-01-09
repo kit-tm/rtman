@@ -23,7 +23,7 @@ class QccMultiStream(IRTMultiStream):
             transmission_schedule=None,  # fixme: dummy
             maximum_latency=0,  # fixme: dummy
             maximum_jitter=0,  # fixme: dummy
-            name=talker.name if talker.name else stream_id
+            name=talker.name if talker.name else talker.stream_id
         )
 
     def add_receiver_from_listener(self, odl_client, listener):
