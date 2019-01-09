@@ -67,6 +67,7 @@ class MacFix(IRTOdlClient):
     def convert_mac_address(self, outside_address):
         """
         get MAC address of a host based on its outside address.
+        this function should be idempotent
         :param str outside_address:
         :return: MAC address belonging to the outside address
         :rtype: str
@@ -79,7 +80,7 @@ class MininetStreamRegisterer(UNIClient):
 
     __slots__ = ("_rtman", "_talkers", "_listeners")
 
-    def __init__(self, rtman, streams_config):
+    def __init__(self, rtman, streams_config, hosts_translation):
         super(MininetStreamRegisterer, self).__init__(rtman)
         self._rtman = self._uni_server  # type: RTman
         self._talkers = {}
@@ -87,7 +88,7 @@ class MininetStreamRegisterer(UNIClient):
 
         unique_id = 1
         for stream_desc in streams_config:
-            sender = host_name_to_host(stream_desc["sender"])
+            sender = rtman.odl_client.get_host_by_mac(hosts_translation[stream_desc["sender"]])
             uid = hex(unique_id)[2:]
             while len(uid) < 4:
                 uid = "0" + uid
@@ -114,7 +115,7 @@ class MininetStreamRegisterer(UNIClient):
                     user_to_network_requirements=None,
                     interface_capabilities=None
                 )
-                for receiver in (host_name_to_host(r) for r in stream_desc["receivers"])
+                for receiver in (rtman.odl_client.get_host_by_mac(hosts_translation[r]) for r in stream_desc["receivers"])
             ]
 
     def start(self):
@@ -155,33 +156,8 @@ if __name__ == "__main__":
         wireshark_script=wireshark_script
     )
 
-    def host_name_to_host(hostname_str):
-            """
-            let's say the topology.json has a host entry like:
-
-              "topology": {
-                "hosts": {
-                  "h1": "12:23:34:45:56:67",
-
-            and you want to get RTman's ODLClient's host object corresponding with h1, but all you have is the string "h1",
-            then this function is the solution for you!
-
-            :param str hostname_str: hostname in mininet
-            :return: Host Object for ODLClient
-            :rtype: Host
-            """
-            return odl_client.get_host_by_mac(
-                odl_client.convert_mac_address(
-                    config["topology"]["hosts"][
-                        hostname_str
-                    ]
-                )
-            )
-
-
-
     if ADD_STREAMS_VIA_UNI:
-        uni_client = MininetStreamRegisterer(rtman, config["streams"])
+        uni_client = MininetStreamRegisterer(rtman, config["streams"], config["topology"]["hosts"])
 
         try:
             rtman.start(uni_client)
@@ -201,8 +177,30 @@ if __name__ == "__main__":
 
 
 
-    else:  # deprecated - remove this when the UNI method has been verified
+    else:  # deprecated - remove from here on when the UNI method has been verified. also, remove if and the ADD_STREAMS_VIA_UNI variable.
         # translate to odl_client data model
+
+        def host_name_to_host(hostname_str):
+            """
+            let's say the topology.json has a host entry like:
+
+              "topology": {
+                "hosts": {
+                  "h1": "12:23:34:45:56:67",
+
+            and you want to get RTman's ODLClient's host object corresponding with h1, but all you have is the string "h1",
+            then this function is the solution for you!
+
+            :param str hostname_str: hostname in mininet
+            :return: Host Object for ODLClient
+            :rtype: Host
+            """
+            return odl_client.get_host_by_mac(
+                    config["topology"]["hosts"][
+                        hostname_str
+                    ]
+            )
+
         multistreams = {
             stream_desc["name"]: IRTMultiStream(
                 sender=host_name_to_host(stream_desc["sender"]),

@@ -77,6 +77,7 @@ class ODLClient(object):
         """
         convert a mac address from the config to an actual mac address seen in the topology
         should be used when handling with data that does not stem from the controller or ODLClient
+        this function should be idempotent
         :param address:
         :return:
         """
@@ -143,6 +144,7 @@ class ODLClient(object):
         :param str mac_address: target mac address
         :return:
         """
+        mac_address = self.convert_mac_address(mac_address)
         for node in self._hosts.itervalues():  # type: Host
             if mac_address in node.mac_addresses:
                 return node
