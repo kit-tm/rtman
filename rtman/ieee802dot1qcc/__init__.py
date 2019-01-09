@@ -5,8 +5,22 @@ class UNIServer(object):
 
     According to 802.1Qcc, the UNI is based on talkers and listeners.
     A stream is detected when a talker and one or more listeners share the same stream ID.
+
+    Usage:
+
+    create this object,
+    then create all UNI clients for this,
+    then call this.start(*uni_clients)
+
+    during runtime or start(),
+    use cumulative_join/leave functions to add/remove talkers and listeners as specified in 802.1Qcc
+
+    on shutdown, call this.stop() to shutdown all UNI clients and this object.
     """
-    __slots__ = ()
+    __slots__ = ("_uni_clients", )
+
+    def __init__(self):
+        self._uni_clients = []  # type: list[UNIClient]
 
     def cumulative_join(self, *args):
         """
@@ -42,6 +56,24 @@ class UNIServer(object):
     def listener_leave(self, listener):
         return self.cumulative_leave(listener)
 
+    def start(self, *uni_clients):
+        """
+        Start all the uni clients, and perform own startup procedure
+        Note that uni_client.start() may add talkers/listeners.
+        :return:
+        """
+        self._uni_clients = uni_clients
+        for uni_client in uni_clients:  # type: UNIClient
+            uni_client.start()
+
+    def stop(self):
+        """
+        Stop all the uni clients, and perform own shutdown procedure
+        :return:
+        """
+        for uni_client in self._uni_clients:
+            uni_client.stop()
+
 
 class UNIClient(object):
     """
@@ -60,6 +92,7 @@ class UNIClient(object):
     def start(self):
         """
         Start the component
+        This may add/remove listeners to the UNI server.
         :return: None
         """
         raise NotImplementedError()
@@ -67,6 +100,7 @@ class UNIClient(object):
     def stop(self):
         """
         Stop the component
+        This may add/remove listeners to the UNI server.
         :return: None
         """
         raise NotImplementedError()

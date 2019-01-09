@@ -3,7 +3,7 @@ import subprocess
 import traceback
 from threading import Lock
 
-from ieee802dot1qcc import UNIServer
+from ieee802dot1qcc import UNIServer, UNIClient
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.talker import Talker
 from odl_client.base_odlclient.node import SwitchConnector, Host
@@ -23,7 +23,7 @@ class RTman(UNIServer):
     Note: instead of changing the ODLClient used here, change the superclass of MacFix.
     """
 
-    __slots__ = ("_odl_client", "_web",
+    __slots__ = ("_odl_client", "_web", "_uni_clients",
 
                  "_qcc_stream_manager",
 
@@ -47,18 +47,15 @@ class RTman(UNIServer):
         self._web = RTmanWeb(self, web_address, web_port)
         self._qcc_stream_manager = QccStreamManager(odl_client)
 
-    def start(self):
-        """
-
-        :return:
-        """
+    def start(self, *uni_clients):
         self._odl_client._build_nodes()
         self._web.start()
+        super(RTman, self).start(*uni_clients)
 
     def stop(self, cleanup=True):
+        super(RTman, self).stop()
         if cleanup:
             try:
-                # fixme: crash when topology changes before this call
                 self._odl_client.clean_up_flows()
             except:
                 traceback.print_exc()
@@ -91,7 +88,7 @@ class RTman(UNIServer):
         """
 
         :return: ODLClient of this RTman instance
-        :rtype: MacFix
+        :rtype: IRTOdlClient
         """
         return self._odl_client
 

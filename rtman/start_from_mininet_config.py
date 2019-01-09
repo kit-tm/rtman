@@ -9,6 +9,7 @@ from odl_client.irt_odlclient.stream import IRTMultiStream, RegularTransmissionS
 from odl_client.base_odlclient.node import Host
 from rtman import RTman
 
+from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.listener import Listener
 
@@ -74,6 +75,67 @@ class MacFix(IRTOdlClient):
         return super(MacFix, self).convert_mac_address(outside_address)
 
 
+class MininetStreamRegisterer(UNIClient):
+
+    __slots__ = ("_rtman", "_talkers", "_listeners")
+
+    def __init__(self, rtman, streams_config):
+        super(MininetStreamRegisterer, self).__init__(rtman)
+        self._rtman = self._uni_server  # type: RTman
+        self._talkers = {}
+        self._listeners = {}
+
+        unique_id = 1
+        for stream_desc in streams_config:
+            sender = host_name_to_host(stream_desc["sender"])
+            uid = hex(unique_id)[2:]
+            while len(uid) < 4:
+                uid = "0" + uid
+            stream_id = StreamID(next(iter(sender.mac_addresses)), uid)
+            unique_id += 1
+
+            self._talkers[stream_desc["name"]] = Talker(
+                stream_id=stream_id,
+                stream_rank=1,
+                end_station_interfaces={
+                    InterfaceID(next(iter(sender.mac_addresses)), sender.get_connector().connector_id)},
+                data_frame_specification=None,
+                traffic_specification=None,
+                user_to_network_requirements=None,
+                interface_capabilities=None,
+                name=stream_desc["name"]
+            )
+
+            self._listeners[stream_desc["name"]] = [
+                Listener(
+                    stream_id=stream_id,
+                    end_station_interfaces={
+                        InterfaceID(next(iter(receiver.mac_addresses)), receiver.get_connector().connector_id)},
+                    user_to_network_requirements=None,
+                    interface_capabilities=None
+                )
+                for receiver in (host_name_to_host(r) for r in stream_desc["receivers"])
+            ]
+
+    def start(self):
+        if AUTO_ADD_STREAMS:
+            tojoin = list(self._talkers.itervalues())
+            for l in self._listeners.itervalues():
+                tojoin.extend(l)
+            rtman.cumulative_join(*tojoin)
+
+    def stop(self):
+        pass
+
+    @property
+    def talkers(self):
+        return self._talkers
+
+    @property
+    def listeners(self):
+        return self._listeners
+
+
 if __name__ == "__main__":
     config_file = sys.argv[1] if len(sys.argv)>1 else "../orchestrate/topology.json"
     wireshark_script = sys.argv[2] if len(sys.argv)>2 else None
@@ -117,48 +179,29 @@ if __name__ == "__main__":
             )
 
 
-    additional_vars = {}
 
     if ADD_STREAMS_VIA_UNI:
-        # translate into Qcc data model
-        talkers = {}
-        listeners = {}
-        unique_id = 1
-        for stream_desc in config["streams"]:
-            sender = host_name_to_host(stream_desc["sender"])
-            uid = hex(unique_id)[2:]
-            while len(uid) < 4:
-                uid = "0" + uid
-            stream_id = StreamID(next(iter(sender.mac_addresses)), uid)
-            unique_id += 1
+        uni_client = MininetStreamRegisterer(rtman, config["streams"])
 
-            talkers[stream_desc["name"]] = Talker(
-                stream_id=stream_id,
-                stream_rank=1,
-                end_station_interfaces={
-                InterfaceID(next(iter(sender.mac_addresses)), sender.get_connector().connector_id)},
-                data_frame_specification=None,
-                traffic_specification=None,
-                user_to_network_requirements=None,
-                interface_capabilities=None,
-                name=stream_desc["name"]
-            )
+        try:
+            rtman.start(uni_client)
+        except:
+            traceback.print_exc()
 
-            listeners[stream_desc["name"]] = [
-                Listener(
-                    stream_id=stream_id,
-                    end_station_interfaces={
-                    InterfaceID(next(iter(receiver.mac_addresses)), receiver.get_connector().connector_id)},
-                    user_to_network_requirements=None,
-                    interface_capabilities=None
-                )
-                for receiver in (host_name_to_host(r) for r in stream_desc["receivers"])
-            ]
-        additional_vars.update({
-            "talkers": talkers,
-            "listeners": listeners
-        })
-    else:
+        try:
+            rtman.get_shell(additional_vars={
+                "mininet_autoadd_uni_client": uni_client,
+                "talkers": uni_client.talkers,
+                "listeners": uni_client.listeners
+            })
+        except:
+            traceback.print_exc()
+        finally:
+            rtman.stop(cleanup=AUTO_CLEAN_STREAMS)
+
+
+
+    else:  # deprecated - remove this when the UNI method has been verified
         # translate to odl_client data model
         multistreams = {
             stream_desc["name"]: IRTMultiStream(
@@ -178,33 +221,21 @@ if __name__ == "__main__":
         else:
             partialstreams = set()
 
-        additional_vars.update({
-            "multistreams": multistreams,
-            "partialstreams": partialstreams
-        })
-
-    try:
-        rtman.start()
-        if AUTO_ADD_STREAMS:
+        try:
+            rtman.start()
             print "Deploying flows"
-            if ADD_STREAMS_VIA_UNI:
-                # noinspection PyUnboundLocalVariable
-                tojoin = list(talkers.itervalues())
-                # noinspection PyUnboundLocalVariable
-                for l in listeners.itervalues():
-                    tojoin.extend(l)
-                rtman.cumulative_join(*tojoin)
-            else:
-                # noinspection PyUnboundLocalVariable
-                for partialstream in partialstreams:
-                    rtman.odl_client.add_partialstream(partialstream)
-                rtman.odl_client.update_and_deploy_schedule()
-    except:
-        traceback.print_exc()
+            for partialstream in partialstreams:
+                rtman.odl_client.add_partialstream(partialstream)
+            rtman.odl_client.update_and_deploy_schedule()
+        except:
+            traceback.print_exc()
 
-    try:
-        rtman.get_shell(additional_vars=additional_vars)
-    except:
-        traceback.print_exc()
-    finally:
-        rtman.stop(cleanup=AUTO_CLEAN_STREAMS)
+        try:
+            rtman.get_shell(additional_vars={
+                "multistreams": multistreams,
+                "partialstreams": partialstreams
+            })
+        except:
+            traceback.print_exc()
+        finally:
+            rtman.stop(cleanup=AUTO_CLEAN_STREAMS)
