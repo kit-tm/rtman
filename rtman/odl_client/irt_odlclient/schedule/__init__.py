@@ -322,6 +322,7 @@ class Scheduler(object):
         """
         self._odl_client = odl_client
         self._schedule = self.SCHEDULE_CLS(self)
+        self._configuration = Configuration(self, set(), set(), 1)
 
     def init_nodestructure(self):
         """
@@ -411,4 +412,10 @@ class Scheduler(object):
         print self._configuration.flows
         return self._configuration
 
+    @property
+    def configuration(self):
+        return self._configuration
 
+    @property
+    def schedule(self):
+        return self._schedule

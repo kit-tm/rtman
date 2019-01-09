@@ -100,10 +100,10 @@ class MininetStreamRegisterer(UNIClient):
                 stream_rank=1,
                 end_station_interfaces={
                     InterfaceID(next(iter(sender.mac_addresses)), sender.get_connector().connector_id)},
-                data_frame_specification=None,
-                traffic_specification=None,
-                user_to_network_requirements=None,
-                interface_capabilities=None,
+                data_frame_specification=None,  # fixme: stub
+                traffic_specification=None,  # fixme: stub
+                user_to_network_requirements=None,  # fixme: stub
+                interface_capabilities=None,  # fixme: stub
                 name=stream_desc["name"]
             )
 
@@ -174,7 +174,6 @@ if __name__ == "__main__":
             traceback.print_exc()
         finally:
             rtman.stop(cleanup=AUTO_CLEAN_STREAMS)
-
 
 
     else:  # deprecated - remove from here on when the UNI method has been verified. also, remove if and the ADD_STREAMS_VIA_UNI variable.
