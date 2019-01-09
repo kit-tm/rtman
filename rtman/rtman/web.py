@@ -174,6 +174,7 @@ class RTmanWeb(object):
 
         :return:
         """
+        print "Opening RTman web server: http://%s:%d" % self._tcp_binding
         self._webserver = RTmanWebServer(self, self._tcp_binding)
         t = Thread(target=self._webserver.serve_forever)
         t.daemon = True
