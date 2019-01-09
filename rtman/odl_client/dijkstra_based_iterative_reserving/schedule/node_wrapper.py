@@ -1,4 +1,4 @@
-from irt_odlclient.schedule.node_wrapper import SwitchWrapper, SwitchConnectorWrapper, Topology, Queue
+from odl_client.irt_odlclient.schedule.node_wrapper import SwitchWrapper, SwitchConnectorWrapper, Topology, Queue
 
 class DijkstraSwitchConnectorWrapper(SwitchConnectorWrapper):
 

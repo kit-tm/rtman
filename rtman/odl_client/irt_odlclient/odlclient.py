@@ -1,10 +1,10 @@
-from base_odlclient.openflow import FlowTableEntry
-from base_odlclient.openflow.action import DropFrameAction, ChangeDstIPAction
-from base_odlclient.openflow.base import IPPROTOCOL_UDP
-from base_odlclient.openflow.instruction import Actions
-from reserving_odlclient.odlclient import ReservingODLClient
+from odl_client.base_odlclient.openflow import FlowTableEntry
+from odl_client.base_odlclient.openflow.action import DropFrameAction, ChangeDstIPAction
+from odl_client.base_odlclient.openflow.base import IPPROTOCOL_UDP
+from odl_client.base_odlclient.openflow.instruction import Actions
+from odl_client.reserving_odlclient.odlclient import ReservingODLClient
 from node import CapacityBasedHost, CapacityBasedSwitch
-from base_odlclient.openflow.match import BaseMatch
+from odl_client.base_odlclient.openflow.match import BaseMatch
 from schedule import Scheduler
 
 IRT_FLOW_PRIORITY = 1000

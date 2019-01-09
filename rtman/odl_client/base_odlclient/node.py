@@ -1,4 +1,4 @@
-from base_odlclient.openflow import FlowTableEntry
+from odl_client.base_odlclient.openflow import FlowTableEntry
 
 
 class NotANeighborException(Exception):

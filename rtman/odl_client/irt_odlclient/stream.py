@@ -5,7 +5,7 @@ An IRT stream is a stream with additional properties
  * Maximum latency/jitter: The scheduler must make sure frames always arrive with this latency.
 """
 
-from reserving_odlclient.stream import MultiStream, PartialStream
+from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
 
 class RegularTransmissionSchedule(object):
     __slots__ = ("_frame_size", "_interarrival_time", "_offset")

@@ -137,3 +137,9 @@ the network topology and stream paths.
 
 The scheduler of `dijkstra_based_iterative_reserving` is to-be-replaced by 
 other implementations in the future of this project.
+
+Startup
+-------
+
+To start RTman, use the `start_from_mininet_config.py` script. As argument,
+the script takes a topology.json file, as used in the [mininet](../mininet) set-up.

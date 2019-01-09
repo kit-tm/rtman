@@ -1,16 +1,16 @@
 import sys
 
-from base_odlclient.openflow import FlowTableEntry
-from base_odlclient.openflow.action import PushMPLSAction, SwapMPLSAction, ChangeDstIPAction, ChangeDstMacAction, \
+from odl_client.base_odlclient.openflow import FlowTableEntry
+from odl_client.base_odlclient.openflow.action import PushMPLSAction, SwapMPLSAction, ChangeDstIPAction, ChangeDstMacAction, \
     OutputAction, PopMPLSAction, SetQueueAction
-from base_odlclient.openflow.base import ETHERTYPE_IP4
-from base_odlclient.openflow.instruction import Actions
-from base_odlclient.openflow.match import BaseMatch
-from dijkstra_based_iterative_reserving.schedule.node_wrapper import DijkstraTopology
-from irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, Configuration, TASEntry
-from irt_odlclient.schedule.node_wrapper import NodeWrapper, HostWrapper, SwitchConnectorWrapper
-from irt_odlclient.stream import IRTPartialStream
-from reserving_odlclient.stream import MultiStream
+from odl_client.base_odlclient.openflow.base import ETHERTYPE_IP4
+from odl_client.base_odlclient.openflow.instruction import Actions
+from odl_client.base_odlclient.openflow.match import BaseMatch
+from odl_client.dijkstra_based_iterative_reserving.schedule.node_wrapper import DijkstraTopology
+from odl_client.irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, Configuration, TASEntry
+from odl_client.irt_odlclient.schedule.node_wrapper import NodeWrapper, HostWrapper, SwitchConnectorWrapper
+from odl_client.irt_odlclient.stream import IRTPartialStream
+from odl_client.reserving_odlclient.stream import MultiStream
 
 
 mpls_counter = 32

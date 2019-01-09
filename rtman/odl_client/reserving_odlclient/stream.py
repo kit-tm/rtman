@@ -12,7 +12,7 @@ Thus, a multicast stream is the union of all partial streams with same stream id
 A unicast stream is essentially a multicast stream with a single receiver.
 """
 
-from base_odlclient.node import Host
+from odl_client.base_odlclient.node import Host
 
 
 class PartialStream(object):
@@ -113,6 +113,11 @@ class MultiStream(object):
         return (self._sender == other._sender) and \
                (self._udp_dest_port == other._udp_dest_port) and \
                (self._name == other._name)
+
+    def add_receiver(self, receiver):
+        partialstream = self._partialstream_class(receiver, self)
+        self._partials.append(partialstream)
+        return partialstream
 
     @property
     def name(self):

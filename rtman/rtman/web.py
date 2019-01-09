@@ -5,12 +5,12 @@ from SocketServer import TCPServer
 import BaseHTTPServer
 from threading import Thread
 
-from base_odlclient.node import ODLNode, Switch
+from odl_client.base_odlclient.node import ODLNode, Switch
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from irt_odlclient.schedule import TransmissionPoint
-from reserving_odlclient.stream import MultiStream
+from odl_client.irt_odlclient.schedule import TransmissionPoint
+from odl_client.reserving_odlclient.stream import MultiStream
 
 env = Environment(
     loader=PackageLoader('rtman', 'templates'),

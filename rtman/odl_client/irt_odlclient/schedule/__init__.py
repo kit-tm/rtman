@@ -4,9 +4,9 @@ A schedule is defined as:
 a global transmission cycle time is set.
 
 """
-from base_odlclient.node import Host, Switch
-from irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper, SwitchWrapper
-from reserving_odlclient.stream import MultiStream, PartialStream
+from odl_client.base_odlclient.node import Host, Switch
+from odl_client.irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper, SwitchWrapper
+from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
 from node_wrapper import Topology
 
 

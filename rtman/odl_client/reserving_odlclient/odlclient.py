@@ -1,7 +1,7 @@
-from threading import Lock
+from threading import RLock
 
-from base_odlclient.node import Host, Switch
-from base_odlclient.odlclient import ODLClient, APIException, AlreadyExistsException
+from odl_client.base_odlclient.odlclient import ODLClient
+
 
 class ReservationException(Exception):
     """
@@ -78,7 +78,7 @@ class ReservingODLClient(ODLClient):
     def __init__(self, *args, **kwargs):
         super(ReservingODLClient, self).__init__(*args, **kwargs)
         self._partial_streams = set()
-        self._reservation_lock = Lock()
+        self._reservation_lock = RLock()
 
     def _on_partialstream_add(self, stream):
         """
@@ -126,6 +126,7 @@ class ReservingODLClient(ODLClient):
         :return:
         """
         with self._reservation_lock:
+            # when changing this, also change set_partialstreams
             assert stream not in self._partial_streams
             self._on_partialstream_add(stream)
             self._partial_streams.add(stream)
@@ -137,9 +138,27 @@ class ReservingODLClient(ODLClient):
         :return:
         """
         with self._reservation_lock:
+            # when changing this, also change set_partialstreams
             assert stream in self._partial_streams
             self._on_partialstream_remove(stream)
             self._partial_streams.remove(stream)
+
+    def set_partialstreams(self, partialstreams):
+        """
+        set the partialstreams to the given set, adding missing and removing removed partialstreams.
+        :param Set[PartialStream] partialstreams:
+        :return:
+        """
+        with self._reservation_lock:
+            new_partialstreams = partialstreams.difference(self._partial_streams)
+            old_partialstreams = self._partial_streams.difference(partialstreams)
+
+            for stream in new_partialstreams:
+                self._on_partialstream_add(stream)
+            for stream in old_partialstreams:
+                self._on_partialstream_remove(stream)
+
+            self._partial_streams = partialstreams
 
     def update_and_deploy_schedule(self, flow_priority=1000):
         """
