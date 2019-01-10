@@ -14,7 +14,12 @@ to a controller, and open the web interface.
 
 `misc` contains some other helpers.
 
-The other packages contain the ODL client:
+`odl_client` contains the ODL client.
+
+`ieee802dot1qcc` contains classes for the IEEE 802.1Qcc UNI specification.
+
+`opcua_cuc` contains a UNI Client that requests talker and listener information
+from end devices via OPC UA
 
 ODL Client
 ----------
@@ -122,15 +127,28 @@ scheduler should be implemented by overwriting the functions
 `ijkstra_based_iterative_reserving.schedule` contains a scheduler implementation with
 the before-mentioned functionality.
 
+802.1Qcc
+--------
+
+Most classes are python object structures implementing the data model of
+802.1Qcc-2018 User/network configuration information (clause 46.2).
+
+Noteworthy are the UNIClient and UNIServer classes which provide interfaces
+for the management of multiple UNI Clients on one UNI Server.
+
+The UNI Server provides the required calls for the handover of talker, listener,
+and status messages that serve as stream registration requests. The UNI Client
+is supposed to create talker and listener objects and hand them over to the
+UNI Server.
+
 RTman
 -----
 
-`rtman.RTman` is a fully functional ODL client that takes a set of
+`rtman.RTman` is a fully functional ODL client application that takes a set of
   streams and handles the reservation.
 
-The rtman module stitches together the behavior and provides methods
-that integrate with the orchestrator, i.e., reading the config file and
-executing the steps required to reserve the respective streams.
+The rtman module stitches together the behavior and provides methods and implements
+the 802.1Qcc UNIServer.
 
 It also opens a web interface, including a graphical representation of
 the network topology and stream paths.
@@ -138,8 +156,20 @@ the network topology and stream paths.
 The scheduler of `dijkstra_based_iterative_reserving` is to-be-replaced by 
 other implementations in the future of this project.
 
+OPC UA CUC
+----------
+
+@Thomas TODO
+Implements UNI Client
+
 Startup
 -------
 
-To start RTman, use the `start_from_mininet_config.py` script. As argument,
-the script takes a topology.json file, as used in the [mininet](../mininet) set-up.
+There are several ways to start RTman.
+
+* If you need an RTman instance without any UNI Client, use `start_empty_rtman.py`.
+  * To create a start-up script for your own UNI Client(s), copy this file,
+    instanciate your UNI Client(s), and hand them to the `rtman.start()` call.
+* If you start RTman to connect to a [mininet](../mininet) set-up, use 
+  `start_from_mininet_config.py` script. 
+  As argument, the script takes the same topology.json file as the mininet orchestration.
