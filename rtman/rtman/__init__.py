@@ -98,15 +98,22 @@ class RTman(UNIServer):
 
         :param dict additional_vars: additional variables for interactive shell
         """
+        def getswitch(s): return self._odl_client.get_node("openflow:%d" % s)
+        getswitch.__doc__ = "get switch openflow:s"
+
+        def getconnector(s, c): return self._odl_client.get_node("openflow:%d" % s).get_connector("openflow:%d:%d" % (s, c))
+        getconnector.__doc__ = "get connector openflow:s:c"
+
         with self._interactive_lock:
             console_vars = {
                 "rtman": self,
                 "odl_client": self._odl_client,
                 "wireshark": self.wireshark,
-                "json": json
+                "json": json,
+                "getswitch": getswitch,
+                "getconnetor": getconnector
             }
             console_vars.update(additional_vars)
-
 
             get_console(console_vars, greeting="""
 Entering interactive console. Press ^D or type exit() to exit.
