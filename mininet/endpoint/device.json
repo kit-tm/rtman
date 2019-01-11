@@ -9,7 +9,8 @@
   "send": [
     {
       "host": "localhost",
-      "port": 6500,
+      "dest_port": 6020,
+      "source_port": 6500,
       "size": 1024,
       "interval": 1000000000
     }

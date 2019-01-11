@@ -379,7 +379,7 @@ class Switch(ODLNode):
         self._flows = set()
         for table in inventory_dict["flow-node-inventory:table"]:
             if "flow" in table:
-                self._flows.update((FlowTableEntry.from_odl_inventory(self, inv) for inv in table["flow"]))
+                self._flows.update((FlowTableEntry.from_odl_inventory(self, inv) for inv in table["flow"]))  # fixme: use a loss-free flow table entry class here
         return topology_change_detected
 
     @property

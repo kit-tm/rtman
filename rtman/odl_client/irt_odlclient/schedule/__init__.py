@@ -213,6 +213,10 @@ class TransmissionPoint(object):
 
     @property
     def multistream(self):
+        """
+        :rtype: MultiStream
+        :return:
+        """
         return next(iter(self._partial_streams)).parent
 
     @property

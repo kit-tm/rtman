@@ -9,4 +9,5 @@ mininet_host=$(echo "import json; print json.loads(open('${config}').read())['co
 
 interface=$2
 
-wireshark -k -o gui.window_title:${interface} -i <(ssh ${mininet_host} sudo tcpdump -U -i ${interface} -w -)
+#wireshark -k -o gui.window_title:${interface} -i <(ssh ${mininet_host} sudo tcpdump -U -i ${interface} -w -)
+wireshark -k -i <(ssh ${mininet_host} sudo tcpdump -U -i ${interface} -w -)

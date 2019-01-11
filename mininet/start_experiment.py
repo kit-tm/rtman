@@ -151,7 +151,8 @@ class EndpointAwareNet(Mininet):
             configs[stream["sender"]]["send"].append(
                 {
                     "host": self.get(stream["receivers"][0]).IP(),
-                    "port": stream["port"],
+                    "dest_port": stream["dest_port"],
+                    "source_port": stream["source_port"],
                     "size": stream["traffic"]["framesize"],
                     "interval": stream["traffic"]["time_interarrival"]
                 }
@@ -159,7 +160,7 @@ class EndpointAwareNet(Mininet):
             for receiver in stream["receivers"]:
                 if receiver not in configs:
                     configs[receiver] = empty_endpoint_config()
-                configs[receiver]["receive"].append(stream["port"])
+                configs[receiver]["receive"].append(stream["dest_port"])
 
         # create Endpoint instances
         self._endpoints = {

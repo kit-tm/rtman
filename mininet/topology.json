@@ -41,7 +41,8 @@
   },
   "streams": [
     {
-      "port": 6000,
+      "dest_port": 6000,
+      "source_port": 7000,
       "sender": "h1",
       "receivers": ["h2"],
       "traffic": {
@@ -51,7 +52,8 @@
       },
       "name": "1---2---6000"
     }, {
-      "port": 6001,
+      "dest_port": 6001,
+      "source_port": 7001,
       "sender": "h1",
       "receivers": ["h2"],
       "traffic": {
@@ -61,7 +63,8 @@
       },
       "name": "1---2---6001"
     }, {
-      "port": 6002,
+      "dest_port": 6002,
+      "source_port": 7002,
       "sender": "h1",
       "receivers": ["h2"],
       "traffic": {
@@ -71,7 +74,8 @@
       },
       "name": "1---2---6002"
     }, {
-      "port": 6003,
+      "dest_port": 6003,
+      "source_port": 7003,
       "sender": "h1",
       "receivers": ["h2"],
       "traffic": {

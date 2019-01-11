@@ -56,7 +56,7 @@ class IRTMultiStream(MultiStream):
 
     _partialstream_class = IRTPartialStream
 
-    def __init__(self, sender, receivers, udp_dest_port, transmission_schedule, maximum_latency=-1, maximum_jitter=-1,
+    def __init__(self, sender, receivers, flow_match, transmission_schedule, maximum_latency=-1, maximum_jitter=-1,
                  name=None):
         """
 
@@ -69,7 +69,7 @@ class IRTMultiStream(MultiStream):
         :param partialstream_class:
         :param name:
         """
-        super(IRTMultiStream, self).__init__(sender=sender, receivers=receivers, udp_dest_port=udp_dest_port, name=name)
+        super(IRTMultiStream, self).__init__(sender=sender, receivers=receivers, flow_match=flow_match, name=name)
         self._transmission_schedule = transmission_schedule
         self._maximum_latency = maximum_latency
         self._maximum_jitter = maximum_jitter

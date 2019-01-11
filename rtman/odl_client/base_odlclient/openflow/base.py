@@ -1,8 +1,10 @@
 # IP protocol stack constants
 ETHERTYPE_IP4 = 2048
 ETHERTYPE_MPLS = 34887
+ETHERTYPE_IP6 = 34525
 
 IPPROTOCOL_UDP = 17
+IPPROTOCOL_TCP = 6
 
 
 class ODLBaseObject(object):

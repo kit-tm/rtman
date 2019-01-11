@@ -6,6 +6,8 @@ class DataFrameSpecification(object):
 
 
 class IEEE802MacAddresses(DataFrameSpecification):
+    ANY_MAC_ADR = "ff:ff:ff:ff:ff:ff"
+
     __slots__ = (
         "_source_mac_address",
         "_destination_mac_address"
@@ -46,8 +48,12 @@ class IEEE802VlanTag(DataFrameSpecification):
 
 
 class IPv4Tuple(DataFrameSpecification):
+    ANY_SRC_IP = "0.0.0.0"
+    ANY_PROTOCOL = 0xffff
+    NO_DSCP = 64  # "64 decimal" in specification
+
     __slots__ = (
-        "_source_ip_address",
+        "_source_ip_address",  # None or ANY_SRC_IP for "any"
         "_destination_ip_address",
         "_dscp",
         "_protocol",
@@ -55,8 +61,11 @@ class IPv4Tuple(DataFrameSpecification):
         "_destination_port"
     )
 
-    def __init__(self, source_ip_address, destination_ip_address, dscp, protocol, source_port, destination_port):
+    def __init__(self, destination_ip_address, source_ip_address=ANY_SRC_IP, dscp=NO_DSCP, protocol=ANY_PROTOCOL, source_port=None, destination_port=None):
         super(IPv4Tuple, self).__init__()
+        if source_port is None or destination_port is None:
+            if protocol != IPv4Tuple.ANY_PROTOCOL:
+                raise Exception("invalid arguments: source port or destination port may not be None if a protocol is given.")
         self._source_ip_address = source_ip_address
         self._destination_ip_address = destination_ip_address
         self._dscp = dscp
@@ -90,6 +99,10 @@ class IPv4Tuple(DataFrameSpecification):
 
 
 class IPv6Tuple(DataFrameSpecification):
+    ANY_SRC_IP = "00::00"
+    ANY_PROTOCOL = IPv4Tuple.ANY_PROTOCOL
+    NO_DSCP = IPv4Tuple.NO_DSCP
+
     __slots__ = (
         "_source_ip_address",
         "_destination_ip_address",

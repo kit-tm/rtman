@@ -13,6 +13,7 @@ A unicast stream is essentially a multicast stream with a single receiver.
 """
 
 from odl_client.base_odlclient.node import Host
+from odl_client.base_odlclient.openflow.match import Match
 
 
 class PartialStream(object):
@@ -88,30 +89,30 @@ class MultiStream(object):
       - partials: for each receiver, there is a partial stream, i.e., a unicast stream.
       - name: unique stream identifier in RTman
     """
-    __slots__ = ("_sender", "_partials", "_name", "_udp_dest_port")
+    __slots__ = ("_sender", "_partials", "_name", "_flow_match")
 
     _partialstream_class=PartialStream
 
-    def __init__(self, sender, receivers, udp_dest_port, name=None):
+    def __init__(self, sender, receivers, flow_match, name=None):
         super(MultiStream, self).__init__()
 
         self._sender = sender
-        self._udp_dest_port = udp_dest_port
+        self._flow_match = flow_match
         self._partials = [self._partialstream_class(r, self) for r in receivers]
 
         if name is None:
-            self._name = "%s_%d" % (self._sender.node_id, self._udp_dest_port)
+            self._name = "%s_%d" % (self._sender.node_id, self._flow_match)
         else:
             self._name = name
 
     def __repr__(self):
-        return "MultiStream[%s  :: %s -> %d]" % (self.name, self._sender.node_id, self._udp_dest_port)
+        return "MultiStream[%s  :: %s]" % (self.name, self._sender.node_id)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
         return (self._sender == other._sender) and \
-               (self._udp_dest_port == other._udp_dest_port) and \
+               (self._flow_match == other._flow_match) and \
                (self._name == other._name)
 
     def add_receiver(self, receiver):
@@ -137,14 +138,14 @@ class MultiStream(object):
         return self._sender
 
     @property
-    def udp_dest_port(self):
+    def flow_match(self):
         """
         The UDP destination port that is used for all frames of the stream.
         This is used for SDN Flow Table Matching as well as a unique identifier of frames of the stream.
-        :return: UDP destination port associated with this multicast stream
-        :rtype: int
+        :return: An OpenFlow Match destination port associated with this multicast stream
+        :rtype: Match
         """
-        return self._udp_dest_port
+        return self._flow_match
 
     @property
     def partials(self):

@@ -12,6 +12,7 @@ from rtman import RTman
 from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.listener import Listener
+from ieee802dot1qcc.dataframespec import IPv4Tuple, PROTOCOL_UDP
 
 # False: you will have access to PartialStream/MultiStream objects and manage those directly withing RTman - work below CNC only.
 # True: you will have access to Talker/Listener objects and can add/remove streams via the UNI - work from outside the CNC
@@ -99,8 +100,16 @@ class MininetStreamRegisterer(UNIClient):
                 stream_id=stream_id,
                 stream_rank=1,
                 end_station_interfaces={
-                    InterfaceID(next(iter(sender.mac_addresses)), sender.get_connector().connector_id)},
-                data_frame_specification=None,  # fixme: stub
+                    InterfaceID(next(iter(sender.mac_addresses)), sender.get_connector().connector_id)
+                },
+                data_frame_specification=IPv4Tuple(
+                    destination_ip_address=next(iter(rtman.odl_client.get_host_by_mac(
+                                                                hosts_translation[stream_desc["receivers"][0]]
+                                                            ).ip_addresses))+"/32",  # fixme: works currently, but make this better. in general, we should implement configuring ip addresses for all hosts in topology.json
+                    protocol=PROTOCOL_UDP,
+                    destination_port=stream_desc["dest_port"],
+                    source_port=stream_desc["source_port"]
+                ),
                 traffic_specification=None,  # fixme: stub
                 user_to_network_requirements=None,  # fixme: stub
                 interface_capabilities=None,  # fixme: stub
@@ -139,7 +148,7 @@ class MininetStreamRegisterer(UNIClient):
 
 if __name__ == "__main__":
     config_file = sys.argv[1] if len(sys.argv)>1 else "../orchestrate/topology.json"
-    wireshark_script = sys.argv[2] if len(sys.argv)>2 else None
+    wireshark_script = (sys.argv[2], config_file) if len(sys.argv)>2 else None
 
     with open(config_file, "r") as f:
         config = json.loads(f.read())

@@ -230,7 +230,7 @@ class DijkstraBasedScheduler(Scheduler):
                 # and since we are on it, add part 1 of actions structure as well, if needed.
                 anytp = next(iter(tps))
                 if anytp.is_first:
-                    match = BaseMatch(udp_destination_port=next(iter(anytp.partialstreams)).parent.udp_dest_port)
+                    match = anytp.multistream.flow_match
                     actions.extend((
                         PushMPLSAction(),
                         SwapMPLSAction(mpls_label)

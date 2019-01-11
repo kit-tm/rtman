@@ -150,9 +150,10 @@ class Sender(object):
 
                  "send_fun")
 
-    def __init__(self, receiver_addr, port, framesize, interarrival_time, lossy):
-        self.target = (receiver_addr, port)
+    def __init__(self, receiver_addr, dest_port, source_port, framesize, interarrival_time, lossy):
+        self.target = (receiver_addr, dest_port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind(("0.0.0.0", source_port))  # fixme: doesn't work. use different source port per stream
         self._is_running = True
         self.thread = Thread(target=self.loop)
         self.thread.daemon = True
@@ -208,7 +209,8 @@ if __name__ == "__main__":
 
     senders = [Sender(
         target["host"],
-        target["port"],
+        target["dest_port"],
+        target["source_port"],
         target["size"],
         target["interval"]/float(1000000000),
         config["config"]["lossy"]
