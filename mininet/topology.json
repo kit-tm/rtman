@@ -50,6 +50,7 @@
         "time_interarrival": 2000000000,
         "framesize": 1024
       },
+      "max_latency": 1000000,
       "name": "1---2---6000"
     }, {
       "dest_port": 6001,
@@ -61,6 +62,7 @@
         "time_interarrival": 1000000000,
         "framesize": 1024
       },
+      "max_latency": 1000000,
       "name": "1---2---6001"
     }, {
       "dest_port": 6002,
@@ -72,6 +74,7 @@
         "time_interarrival": 1000000000,
         "framesize": 1024
       },
+      "max_latency": 1000000,
       "name": "1---2---6002"
     }, {
       "dest_port": 6003,
@@ -83,6 +86,7 @@
         "time_interarrival": 1000000000,
         "framesize": 1024
       },
+      "max_latency": 1000000,
       "name": "1---2---6003"
     }
   ]

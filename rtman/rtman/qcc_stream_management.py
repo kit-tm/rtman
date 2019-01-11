@@ -73,7 +73,7 @@ class QccMultiStream(IRTMultiStream):
             sender=sender,
             receivers=set(),
             flow_match=QccMatch.from_framespec(talker.data_frame_specification),
-            transmission_schedule=None,  # fixme: dummy
+            transmission_schedule=None,  # fixme: dummy  - need a better model in IRTMultiStream...
             maximum_latency=0,  # fixme: dummy
             maximum_jitter=0,  # fixme: dummy
             name=talker.name if talker.name else talker.stream_id

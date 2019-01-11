@@ -2,7 +2,8 @@ import sys
 import json
 import traceback
 
-from ieee802dot1qcc.common import StreamID, InterfaceID
+from ieee802dot1qcc.common import StreamID, InterfaceID, UserToNetworkRequirements, InterfaceCapabilities
+from ieee802dot1qcc.trafficspec import TSpecTimeAware, TRANSMISSION_SELECTION_STRICT_PRIORITY
 from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
 from odl_client.irt_odlclient.stream import IRTMultiStream, RegularTransmissionSchedule
@@ -110,9 +111,24 @@ class MininetStreamRegisterer(UNIClient):
                     destination_port=stream_desc["dest_port"],
                     source_port=stream_desc["source_port"]
                 ),
-                traffic_specification=None,  # fixme: stub
-                user_to_network_requirements=None,  # fixme: stub
-                interface_capabilities=None,  # fixme: stub
+                traffic_specification=TSpecTimeAware(
+                    transmission_selection=TRANSMISSION_SELECTION_STRICT_PRIORITY,
+                    interval=stream_desc["traffic"]["time_interarrival"],
+                    max_frames_per_interval=1,
+                    max_frame_size=stream_desc["traffic"]["framesize"],
+                    earliest_transmit_offset=stream_desc["traffic"]["time_offset"],
+                    latest_transmit_offset=stream_desc["traffic"]["time_offset"]+1000000,  # +1ms
+                    jitter=1000000  # 1ms
+                ),
+                user_to_network_requirements=UserToNetworkRequirements(
+                    num_seamless_trees=0,
+                    max_latency=stream_desc["max_latency"]
+                ),
+                interface_capabilities=InterfaceCapabilities(
+                    vlan_tag_capable=False,
+                    cb_stream_iden_type_list=[],
+                    cb_sequence_type_list=[]
+                ),
                 name=stream_desc["name"]
             )
 
@@ -121,8 +137,15 @@ class MininetStreamRegisterer(UNIClient):
                     stream_id=stream_id,
                     end_station_interfaces={
                         InterfaceID(next(iter(receiver.mac_addresses)), receiver.get_connector().connector_id)},
-                    user_to_network_requirements=None,
-                    interface_capabilities=None
+                    user_to_network_requirements=UserToNetworkRequirements(
+                        num_seamless_trees=0,
+                        max_latency=stream_desc["max_latency"]
+                    ),
+                    interface_capabilities=InterfaceCapabilities(
+                        vlan_tag_capable=False,
+                        cb_stream_iden_type_list=[],
+                        cb_sequence_type_list=[]
+                    ),
                 )
                 for receiver in (rtman.odl_client.get_host_by_mac(hosts_translation[r]) for r in stream_desc["receivers"])
             ]
