@@ -40,7 +40,14 @@ class StreamID(object):
             mac_address = MacAddress(mac_address)
 
         if not isinstance(unique_id, basestring):
-            raise NotImplementedError()
+            if isinstance(unique_id, int):
+                unique_id = hex(unique_id)[2:]
+                if len(unique_id) > 4:
+                    raise NotImplementedError()
+                while len(unique_id) < 4:
+                    unique_id = "0" + unique_id
+            else:
+                raise NotImplementedError()
         else:
             if len(unique_id) == 5:
                 unique_id = unique_id[0:2] + unique_id[3:5]

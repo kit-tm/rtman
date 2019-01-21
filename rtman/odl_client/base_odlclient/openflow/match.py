@@ -1,6 +1,9 @@
+import json
 from enum import Enum
 
 from base import ODLBaseObject, IPPROTOCOL_UDP, IPPROTOCOL_TCP, ETHERTYPE_IP4, ETHERTYPE_IP6, ETHERTYPE_MPLS
+from misc.dict_tools import merge_dicts
+
 
 class Match(ODLBaseObject):
     """
@@ -43,7 +46,11 @@ class BaseMatch(GenericMatch):
         return not self.__eq__(o)
 
     def __init__(self, **kwargs):
+        print json.dumps(kwargs, indent=2)
         kwargs = self._inflate(kwargs)
+        print json.dumps(kwargs, indent=2)
+        kwargs = self._transform(kwargs)
+        print json.dumps(kwargs, indent=2)
         super(BaseMatch, self).__init__(self._to_odlinventory(kwargs))
 
     dependencies = {  # _inflate goes through dependencies recursively.
@@ -68,9 +75,35 @@ class BaseMatch(GenericMatch):
         "mac_destination_address": {},
         "mac_source_address": {},
 
-        "in_port": {},
-
+        "in_port": {}
     }
+
+    @classmethod
+    def _inflate(cls, kwargs):
+        """
+        add dependencies (e.g., when matching udp port, also match ip-protocol == UDP
+        :param kwargs:
+        :return:
+        """
+        result = kwargs.copy()
+        for k in kwargs.iterkeys():
+            dependencies = cls.dependencies[k]
+            result.update(cls._inflate(dependencies))
+        return result
+
+
+    transformations = {
+        "ipv4_destination": lambda ipaddr: ipaddr if "/" in ipaddr else ipaddr + "/32",
+        "ipv4_source":      lambda ipaddr: ipaddr if "/" in ipaddr else ipaddr + "/32"
+    }
+
+    @classmethod
+    def _transform(cls, kwargs):
+        result = {}
+        for k, v in kwargs.iteritems():
+            result[k] = cls.transformations.get(k, lambda x: x)(v)
+        return result
+
 
     positions = {
         "udp_destination_port": ("udp-destination-port",),
@@ -94,21 +127,8 @@ class BaseMatch(GenericMatch):
         "mac_destination_address": ("ethernet-match", "ethernet-destination", "address"),
         "mac_source_address": ("ethernet-match", "ethernet-source", "address"),
 
-        "in_port": ("in-port",),
+        "in_port": ("in-port",)
     }
-
-    @classmethod
-    def _inflate(cls, kwargs):
-        """
-        add dependencies (e.g., when matching udp port, also match ip-protocol == UDP
-        :param kwargs:
-        :return:
-        """
-        result = kwargs.copy()
-        for k in kwargs.iterkeys():
-            dependencies = cls.dependencies[k]
-            result.update(cls._inflate(dependencies))
-        return result
 
     @classmethod
     def _to_odlinventory(cls, kwargs):
@@ -117,11 +137,26 @@ class BaseMatch(GenericMatch):
         :param kwargs:
         :return:
         """
-        result = {}
+        result = []
         for k, v in kwargs.iteritems():
+            # let's say we have        "ethertype": ("ethernet-match" ,"ethernet-type", "type")
+            # and the result should be:  {ethernet-match: {ethernet-type: {type: v}}}
+
+            # start with reverse path:     ["type", "ethernet-type", "ethernet-match"]
             path = cls.positions[k][::-1]
+
+            # now build the inner object   {type: v}
             entry = {path[0]: v}
+
+            # and now build it inside out. don't use first item  -> ["ethernet-type", "ethernet-match"]
+            # then we will get
+            #   first iteration: k_=="ethernet-type"    ->    {ethernet-type: {type: v}}
+            #   next  iteration: k_=="ethernet-match"   ->    {ethernet-match: {ethernet-type: {type: v}}}
+            # done.
             for k_ in path[1:]:
                 entry = {k_: entry}
-            result.update(entry)
-        return result
+
+            # add this to the result.
+            # fixme: update recursively.
+            result.append(entry)
+        return merge_dicts(*result)

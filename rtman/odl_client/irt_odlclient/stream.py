@@ -10,7 +10,7 @@ from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
 class RegularTransmissionSchedule(object):
     __slots__ = ("_frame_size", "_interarrival_time", "_offset")
 
-    def __init__(self, frame_size, interarrival_time, offset):
+    def __init__(self, frame_size, interarrival_time, offset):  # fixme: better parameters
         """
 
         :param int frame_size: maximum frame size in bytes
@@ -57,7 +57,7 @@ class IRTMultiStream(MultiStream):
     _partialstream_class = IRTPartialStream
 
     def __init__(self, sender, receivers, flow_match, transmission_schedule, maximum_latency=-1, maximum_jitter=-1,
-                 name=None):
+                 name=None):  # fixme: better parameters
         """
 
         :param sender:

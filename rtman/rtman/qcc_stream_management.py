@@ -3,7 +3,8 @@ from threading import RLock
 from ieee802dot1qcc.common import InterfaceID
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.talker import Talker
-from ieee802dot1qcc.dataframespec import IEEE802MacAddresses, IEEE802VlanTag, IPv4Tuple, IPv6Tuple, PROTOCOL_TCP, PROTOCOL_UDP
+from ieee802dot1qcc.dataframespec import IEEE802MacAddresses, IEEE802VlanTag, IPv4Tuple, IPv6Tuple, PROTOCOL_TCP, \
+    PROTOCOL_UDP, UncheckedIPv4Tuple
 
 from odl_client.irt_odlclient.stream import IRTMultiStream, IRTPartialStream
 from odl_client.base_odlclient.openflow.match import BaseMatch
@@ -29,10 +30,10 @@ class QccMatch(BaseMatch):
         elif isinstance(frame_spec, IEEE802VlanTag):
             raise NotImplementedError()  # fixme
 
-        elif isinstance(frame_spec, IPv4Tuple) or isinstance(frame_spec, IPv6Tuple):
+        elif isinstance(frame_spec, IPv4Tuple) or isinstance(frame_spec, UncheckedIPv4Tuple):
             fields = {}
 
-            if isinstance(frame_spec, IPv4Tuple):
+            if isinstance(frame_spec, UncheckedIPv4Tuple):
                 fields["ipv4_destination"] = frame_spec.destination_ip_address
                 if frame_spec.source_ip_address is not None and frame_spec.source_ip_address != IPv4Tuple.ANY_SRC_IP:
                     fields["ipv4_source"] = frame_spec.source_ip_address
@@ -44,11 +45,15 @@ class QccMatch(BaseMatch):
             if frame_spec.protocol is not None and frame_spec.protocol != IPv4Tuple.ANY_PROTOCOL:
                 fields["ip_protocol"] = frame_spec.protocol
                 if frame_spec.protocol == PROTOCOL_UDP:
-                    fields["udp_destination_port"] = frame_spec.destination_port
-                    fields["udp_source_port"] = frame_spec.source_port
+                    if frame_spec.destination_port:
+                        fields["udp_destination_port"] = frame_spec.destination_port
+                    if frame_spec.source_port:
+                        fields["udp_source_port"] = frame_spec.source_port
                 elif frame_spec.protocol == PROTOCOL_TCP:
-                    fields["tcp_destination_port"] = frame_spec.destination_port
-                    fields["tcp_source_port"] = frame_spec.source_port
+                    if frame_spec.destination_port:
+                        fields["tcp_destination_port"] = frame_spec.destination_port
+                    if frame_spec.source_port:
+                        fields["tcp_source_port"] = frame_spec.source_port
                 else:
                     raise Exception("invalid protocol: %d" % frame_spec.protocol)
 

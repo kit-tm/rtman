@@ -46,8 +46,7 @@ class IEEE802VlanTag(DataFrameSpecification):
     def vlan_id(self):
         return self._vlan_id
 
-
-class IPv4Tuple(DataFrameSpecification):
+class UncheckedIPv4Tuple(DataFrameSpecification):
     ANY_SRC_IP = "0.0.0.0"
     ANY_PROTOCOL = 0xffff
     NO_DSCP = 64  # "64 decimal" in specification
@@ -62,10 +61,7 @@ class IPv4Tuple(DataFrameSpecification):
     )
 
     def __init__(self, destination_ip_address, source_ip_address=ANY_SRC_IP, dscp=NO_DSCP, protocol=ANY_PROTOCOL, source_port=None, destination_port=None):
-        super(IPv4Tuple, self).__init__()
-        if source_port is None or destination_port is None:
-            if protocol != IPv4Tuple.ANY_PROTOCOL:
-                raise Exception("invalid arguments: source port or destination port may not be None if a protocol is given.")
+        super(UncheckedIPv4Tuple, self).__init__()
         self._source_ip_address = source_ip_address
         self._destination_ip_address = destination_ip_address
         self._dscp = dscp
@@ -96,6 +92,16 @@ class IPv4Tuple(DataFrameSpecification):
     @property
     def destination_port(self):
         return self._destination_port
+
+class IPv4Tuple(UncheckedIPv4Tuple):
+    def __init__(self, destination_ip_address, source_ip_address=UncheckedIPv4Tuple.ANY_SRC_IP,
+                 dscp=UncheckedIPv4Tuple.NO_DSCP, protocol=UncheckedIPv4Tuple.ANY_PROTOCOL, source_port=None,
+                 destination_port=None):
+        if source_port is None or destination_port is None:
+            if protocol != IPv4Tuple.ANY_PROTOCOL:
+                raise Exception("invalid arguments: source port or destination port may not be None if a protocol is given.")
+        super(IPv4Tuple, self).__init__(destination_ip_address, source_ip_address, dscp, protocol, source_port,
+                                        destination_port)
 
 
 class IPv6Tuple(DataFrameSpecification):

@@ -106,7 +106,7 @@ class MininetStreamRegisterer(UNIClient):
                 data_frame_specification=IPv4Tuple(
                     destination_ip_address=next(iter(rtman.odl_client.get_host_by_mac(
                                                                 hosts_translation[stream_desc["receivers"][0]]
-                                                            ).ip_addresses))+"/32",  # fixme: works currently, but make this better. in general, we should implement configuring ip addresses for all hosts in topology.json
+                                                            ).ip_addresses)),  # fixme: works currently, but make this better. in general, we should implement configuring ip addresses for all hosts in topology.json
                     protocol=PROTOCOL_UDP,
                     destination_port=stream_desc["dest_port"],
                     source_port=stream_desc["source_port"]
