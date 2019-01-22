@@ -1,5 +1,4 @@
 import json
-from enum import Enum
 
 from base import ODLBaseObject, IPPROTOCOL_UDP, IPPROTOCOL_TCP, ETHERTYPE_IP4, ETHERTYPE_IP6, ETHERTYPE_MPLS
 from misc.dict_tools import merge_dicts
@@ -46,11 +45,8 @@ class BaseMatch(GenericMatch):
         return not self.__eq__(o)
 
     def __init__(self, **kwargs):
-        print json.dumps(kwargs, indent=2)
         kwargs = self._inflate(kwargs)
-        print json.dumps(kwargs, indent=2)
         kwargs = self._transform(kwargs)
-        print json.dumps(kwargs, indent=2)
         super(BaseMatch, self).__init__(self._to_odlinventory(kwargs))
 
     dependencies = {  # _inflate goes through dependencies recursively.
@@ -87,8 +83,9 @@ class BaseMatch(GenericMatch):
         """
         result = kwargs.copy()
         for k in kwargs.iterkeys():
-            dependencies = cls.dependencies[k]
-            result.update(cls._inflate(dependencies))
+            if k in cls.dependencies:
+                dependencies = cls.dependencies[k]
+                result.update(cls._inflate(dependencies))  # fixme: should not overwrite existing keys.
         return result
 
 
