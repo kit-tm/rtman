@@ -64,6 +64,7 @@ class MacFix(IRTOdlClient):
             self._macfix__result = {list(unsatisfied)[0]: list(unexpected)[0]}
         else:
             self._macfix__result = {}
+
         return res
 
     def convert_mac_address(self, outside_address):

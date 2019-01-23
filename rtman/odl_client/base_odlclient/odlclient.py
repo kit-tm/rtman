@@ -163,8 +163,8 @@ class ODLClient(object):
             else:
                 inventory_dict = {}
 
-            result = self._request_json("operational/network-topology:network-topology")
-            topology = result["network-topology"]["topology"][0]
+            result = self._request_json("operational/network-topology:network-topology/topology/flow:1")
+            topology = result["topology"][0]
             for node in topology.get("node", []):
                 node_id = node["node-id"]
                 if node_id.startswith("host:"):
