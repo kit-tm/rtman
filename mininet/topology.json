@@ -11,8 +11,8 @@
     "                s53 == s54"
   ],
   "config": {
-    "___odl_host": "192.168.33.1",
-    "odl_host": "localhost",
+    "odl_host": "192.168.33.1",
+    "___odl_host": "localhost",
     "odl_port": 6633,
     "mininet_host": "mininet-vm",
     "___mininet_host": "localhost"

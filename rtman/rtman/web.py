@@ -1,8 +1,17 @@
 import json
 import re
 import traceback
-from SocketServer import TCPServer
-import BaseHTTPServer
+
+try:  # python 2/3 compatibility
+    from socketserver import TCPServer
+except ImportError:
+    from SocketServer import TCPServer
+
+try:
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+except ImportError:
+    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
 from threading import Thread
 
 from odl_client.base_odlclient.node import ODLNode, Switch
@@ -43,15 +52,15 @@ def flatten_dict(d, separator="/"):
     result = {}
     if isinstance(d, list):
         d = {i:d[i] for i in range(len(d))}
-    for k, v in d.iteritems():
+    for k, v in d.items():
         if isinstance(v, dict) or isinstance(v, list):
-            for vk, vv in flatten_dict(v).iteritems():
+            for vk, vv in flatten_dict(v).items():
                 result["%s%s%s" % (k, separator, vk)] = vv
         else:
             result[k] = v
     return result
 
-class RTmanWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class RTmanWebHandler(BaseHTTPRequestHandler):
     """
     BaseHTTPRequestHandler to use for RTmanWebServer.
     Uses RTmanWeb's respond_by_urls function to respond to requests.
@@ -61,7 +70,7 @@ class RTmanWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         res = self.server.rtmanweb.respond_by_urls(path=self.path, method=method)
         body, status, headers = res
         self.send_response(status)
-        for k, v in headers.iteritems():
+        for k, v in headers.items():
             self.send_header(k, v)
         self.end_headers()
         self.wfile.write(body)
@@ -101,7 +110,7 @@ class RTmanWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """
         return
 
-class RTmanWebServer(BaseHTTPServer.HTTPServer):
+class RTmanWebServer(HTTPServer):
     """
     HTTPServer that is aware of an RTmanWeb instance.
     """
@@ -174,7 +183,7 @@ class RTmanWeb(object):
 
         :return:
         """
-        print "Opening RTman web server: http://%s:%d" % self._tcp_binding
+        print("Opening RTman web server: http://%s:%d" % self._tcp_binding)
         self._webserver = RTmanWebServer(self, self._tcp_binding)
         t = Thread(target=self._webserver.serve_forever)
         t.daemon = True
@@ -196,7 +205,7 @@ class RTmanWeb(object):
 
     def _switches(self):
         return env.get_template("switch_list.html").render(
-            switches=[{"name": node_id} for node_id in self._rtman.odl_client.switches.iterkeys()]
+            switches=[{"name": node_id} for node_id in self._rtman.odl_client.switches.keys()]
         ), None, None
 
 
@@ -206,18 +215,18 @@ class RTmanWeb(object):
             switch_obj = self._rtman.odl_client.get_node(switch)
             for flow in switch_obj._flows:
                 flowentry = {"others": {}}
-                for k, v in flow._odl_inventory().iteritems():
+                for k, v in flow._odl_inventory().items():
                     if k == "id":
                         flowentry["id"] = v
                     elif k == "instructions":
                         instructions = []
-                        for vk, vv in sorted(flatten_dict(v.get("instruction", {})).iteritems(), key=lambda (x, y): x):
+                        for vk, vv in sorted(flatten_dict(v.get("instruction", {})).items(), key=lambda x, y: x):
                             if not vk.endswith("order"):
                                 instructions.append(("instruction/%s" % vk, vv))
                         flowentry["instructions"] = instructions
                     elif k == "match":
                         matches = []
-                        for vk, vv in sorted(flatten_dict(v).iteritems(), key=lambda (x, y): x):
+                        for vk, vv in sorted(flatten_dict(v).items(), key=lambda x, y: x):
                             if not vk.endswith("order"):
                                 matches.append(("match/%s" % vk, vv))
                         flowentry["match"] = matches
@@ -270,7 +279,7 @@ class RTmanWeb(object):
         # and while we are iterating all hosts, we can use their neighbor lists to get all the links as well.
         links = set()
         nodes = []
-        for node in self._rtman.odl_client.nodes.itervalues():  # type: ODLNode
+        for node in self._rtman.odl_client.nodes.values():  # type: ODLNode
             nodes.append({
                 "id": node.node_id,
                 "is_host": not isinstance(node, Switch)
@@ -333,7 +342,7 @@ class RTmanWeb(object):
 
         # we need a dict that links a connector to its target switch.
         connections = {}
-        for switch in self._rtman.odl_client.switches.itervalues():
+        for switch in self._rtman.odl_client.switches.values():
             for connector in switch.list_connectors():
                 if connector.target:
                     connections[connector.connector_id] = connector.target.parent.node_id
@@ -349,11 +358,11 @@ class RTmanWeb(object):
         cycle_length = self._rtman.odl_client.configuration.cycle_length
         tas_config = {}
 
-        for node_id, switch in tas_entries.iteritems():
+        for node_id, switch in tas_entries.items():
             switchentry = {}
-            for connector_id, switch_connector in switch.iteritems():
+            for connector_id, switch_connector in switch.items():
                 switchconnectorentry = {}
-                for queue_id, tas_entry in switch_connector.iteritems():
+                for queue_id, tas_entry in switch_connector.items():
 
                     # find slots where the gate is changed
                     change_slots = {}

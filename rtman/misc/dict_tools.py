@@ -45,7 +45,7 @@ def merge_dicts(*dicts):
     """
     result = {}
     for d in dicts:
-        for k, v in d.iteritems():
+        for k, v in d.items():
             if isinstance(v, dict) and \
                     k in result and \
                     isinstance(result[k], dict):

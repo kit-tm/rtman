@@ -1,3 +1,8 @@
+try:  # backwards compatibility - in python2, we need basestring for checks later.
+    basestring
+except NameError:  # however, in python3, there is no basestring and we need to use str instead
+    basestring = str
+
 class MacAddress(object):
     __slots__ = ("_mac_address")
 

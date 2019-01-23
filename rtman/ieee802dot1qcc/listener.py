@@ -1,4 +1,4 @@
-from common import StreamID, UserToNetworkRequirements, InterfaceID, InterfaceCapabilities
+from ieee802dot1qcc.common import StreamID, UserToNetworkRequirements, InterfaceID, InterfaceCapabilities
 
 class Listener(object):
     __slots__ = (

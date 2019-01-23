@@ -1,8 +1,8 @@
 import json
 
-from action import Action
-from instruction import Instruction
-from match import Match
+from odl_client.base_odlclient.openflow.action import Action
+from odl_client.base_odlclient.openflow.instruction import Instruction
+from odl_client.base_odlclient.openflow.match import Match
 
 class FlowTableEntry(object):
     """

@@ -118,7 +118,7 @@ class RTman(UNIServer):
             get_console(console_vars, greeting="""
 Entering interactive console. Press ^D or type exit() to exit.
 Available variables:
-  """+", ".join(sorted(console_vars.iterkeys())))
+  """+", ".join(sorted(console_vars.keys())))
 
     def wireshark(self, interface, display_stdout=False):
         """

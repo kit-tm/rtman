@@ -189,6 +189,6 @@ class QccStreamManager(object):
         :return:
         """
         result = set()
-        for l in self._listener_associations.itervalues():
+        for l in self._listener_associations.values():
             result.update(partialstream for listener, partialstream in l)
         return result

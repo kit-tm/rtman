@@ -5,7 +5,7 @@ else
     config=topology.json;
 fi
 config=$(realpath $config)
-mininet_host=$(echo "import json; print json.loads(open('${config}').read())['config']['mininet_host']" | python2)
+mininet_host=$(echo "import json; print(json.loads(open('${config}').read())['config']['mininet_host'])" | python)
 
 interface=$2
 

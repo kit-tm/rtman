@@ -3,9 +3,9 @@ from odl_client.base_odlclient.openflow.action import DropFrameAction, ChangeDst
 from odl_client.base_odlclient.openflow.base import IPPROTOCOL_UDP
 from odl_client.base_odlclient.openflow.instruction import Actions
 from odl_client.reserving_odlclient.odlclient import ReservingODLClient
-from node import CapacityBasedHost, CapacityBasedSwitch
+from odl_client.irt_odlclient.node import CapacityBasedHost, CapacityBasedSwitch
 from odl_client.base_odlclient.openflow.match import BaseMatch
-from schedule import Scheduler
+from odl_client.irt_odlclient.schedule import Scheduler
 
 IRT_FLOW_PRIORITY = 1000
 
@@ -40,7 +40,7 @@ class IRTOdlClient(ReservingODLClient):
     def _before_deploy_flows(self, flows):
         flows = set(flows)
         flows.update(self._flows_dropnonregistered)
-        print "not deploying TAS because it's unsupported yet."
+        print("not deploying TAS because it's unsupported yet.")
         # hint: tas config is discarded as part of the configuration in self._generate_flowset
         return flows
 
@@ -54,9 +54,9 @@ class IRTOdlClient(ReservingODLClient):
                 match=BaseMatch(ip_protocol=IPPROTOCOL_UDP),
                 instructions=(Actions((DropFrameAction(),)),),
                 priority=IRT_FLOW_PRIORITY-1,
-                entry_name="%s::drop_non_IRT" % (self._flow_namespace)
+                entry_name="%s::drop_non_IRT" % self._flow_namespace
             )
-            for switch in self._switches.itervalues()
+            for switch in self._switches.values()
         )
 
         if topology_change_detected:

@@ -171,10 +171,10 @@ class DijkstraBasedScheduler(Scheduler):
 
             # the first iteration would be the connector of the host - skip that.
             # also, only iterate until the second-last entry, as we are using (i, i+1) in each iteration.
-            for i in range(1, max( len(path) for path in pathset.itervalues() )-1):
+            for i in range(1, max( len(path) for path in pathset.values() )-1):
 
                 hops = {}
-                for partialstream, path in pathset.iteritems():  # type: (IRTPartialStream, List[NodeWrapper])
+                for partialstream, path in pathset.items():  # type: (IRTPartialStream, List[NodeWrapper])
                     if len(path) > i:  # assert there are path[i] and path[i+1]. otherwise, this path is not of interest
                         hop = (path[i], path[i+1])
                         if hop in hops:
@@ -184,7 +184,7 @@ class DijkstraBasedScheduler(Scheduler):
                     else:
                         del pathset[partialstream.identifier]  # don't need that path in the future anymore, as check will always fail
 
-                for (switch, next_neighbor), partialstreams in hops.iteritems():
+                for (switch, next_neighbor), partialstreams in hops.items():
                     connector = switch.get_neighbor_connector(next_neighbor)
                     new_schedule.add_transmission_point(
                         MPLSTransmissionPoint(
@@ -212,9 +212,9 @@ class DijkstraBasedScheduler(Scheduler):
             for connector in self._topology.node_connectors if isinstance(connector, SwitchConnectorWrapper)
         } # tas_entry_builder[connector_id][queue_id] == {(1,2), (4,5)}
 
-        for multistream_name, multistream_tps_by_switch in self._schedule.transmission_points_by_multistream_by_switch.iteritems():
+        for multistream_name, multistream_tps_by_switch in self._schedule.transmission_points_by_multistream_by_switch.items():
             mpls_label = self.get_multistream_mpls_label(multistream_name)
-            for switch_name, tps in multistream_tps_by_switch.iteritems():  # type: str, set[MPLSTransmissionPoint]
+            for switch_name, tps in multistream_tps_by_switch.items():  # type: str, set[MPLSTransmissionPoint]
 
                 # actions structure:
                 # 1) mpls push operation in case of ingress switch
@@ -271,8 +271,8 @@ class DijkstraBasedScheduler(Scheduler):
                     "%s__%s__%s" % (self._odl_client.flow_namespace, multistream_name, switch_name)
                 ))
 
-        for connector_id, qe in tas_entry_builder.iteritems():
-            for queue_id, transmission_times in qe.iteritems():
+        for connector_id, qe in tas_entry_builder.items():
+            for queue_id, transmission_times in qe.items():
                 tas_entries.add(TASEntry(
                     self._topology.get_node_connector(connector_id).get_queue(queue_id),
                     transmission_times
@@ -300,13 +300,13 @@ class DijkstraBasedScheduler(Scheduler):
 
         # we will store all unvisited destination switches here. We can stop the algorithm once
         #  every destination switch has been visited.
-        missing_destination_switches = destination_switches.values()
+        missing_destination_switches = set(destination_switches.values())
 
 
         ### Phase 2: dijkstra initialization
 
         # all nodes have maximum distance and no predecessor
-        distance = {switch.node_id: sys.maxint for switch in self._topology.switches}  # type: dict[str, int]
+        distance = {switch.node_id: sys.maxsize for switch in self._topology.switches}  # type: dict[str, int]
         prev_node = {switch.node_id: None for switch in self._topology.switches}  # type: dict[str, CostBasedSwitch]
 
         # start node has no cost to self

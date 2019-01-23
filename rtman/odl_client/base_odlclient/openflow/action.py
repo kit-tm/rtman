@@ -1,4 +1,4 @@
-from base import ODLBaseObject, ETHERTYPE_MPLS
+from odl_client.base_odlclient.openflow.base import ODLBaseObject, ETHERTYPE_MPLS
 
 class Action(ODLBaseObject):
     """

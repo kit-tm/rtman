@@ -7,7 +7,7 @@ a global transmission cycle time is set.
 from odl_client.base_odlclient.node import Host, Switch
 from odl_client.irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper, SwitchWrapper
 from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
-from node_wrapper import Topology
+from odl_client.irt_odlclient.schedule.node_wrapper import Topology
 
 
 #fixme: convert schedule to scheduler, and create a different schedule class held by the scheduler.........
@@ -141,13 +141,13 @@ class Schedule(object):
     def partialstreams(self):
         if self._cache_invalid:
             self._generate_cache()
-        return self._cached_transmission_points_by_partialstream.iterkeys()
+        return self._cached_transmission_points_by_partialstream.keys()
 
     @property
     def multistreams(self):
         if self._cache_invalid:
             self._generate_cache()
-        return self._cached_transmission_points_by_multistream.iterkeys()
+        return self._cached_transmission_points_by_multistream.keys()
 
 
 class TransmissionPoint(object):
@@ -190,6 +190,9 @@ class TransmissionPoint(object):
         return "Transmission: %s at %s at %s" % (next(iter(self._partial_streams)).parent.name,
                                                  self._switch_connector.connector_id,
                                                  ", ".join(str(i) for i in self._transmission_times))
+
+    def __hash__(self):
+        return hash(self.__repr__())
 
     __slots__ = ("_switch_connector", "_partial_streams", "_transmission_times")
 
@@ -413,7 +416,7 @@ class Scheduler(object):
         """
         self._generate_new_schedule()
         self._generate_configuration_from_schedule()
-        print self._configuration.flows
+        print(self._configuration.flows)
         return self._configuration
 
     @property

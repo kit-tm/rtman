@@ -52,7 +52,7 @@ class NodeWrapper(object):
 
     @property
     def connectors(self):
-        return self._connectors.values()
+        return set(self._connectors.values())
 
     @property
     def topology(self):
@@ -104,7 +104,7 @@ class SwitchConnectorWrapper(NodeConnectorWrapper):
 
     @property
     def queues(self):
-        return self._queues.values()
+        return set(self._queues.values())
 
     def get_queue(self, queue_id):
         return self._queues[queue_id]
@@ -144,7 +144,7 @@ class HostWrapper(NodeWrapper):
 
     @property
     def connector(self):
-        return next(iter(self._connectors.itervalues()))
+        return next(iter(self._connectors.values()))
 
     @property
     def mac_addresses(self):
@@ -179,7 +179,7 @@ class Topology(object):
         self._node_connectors = {}
 
         # add all nodes (and their connectors)
-        for node in self._odl_client._nodes.itervalues():
+        for node in self._odl_client._nodes.values():
             if isinstance(node, Switch):
                 node_wrapper = self.SWITCHWRAPPER_CLS(node, self)
                 self._switches[node.node_id] = node_wrapper
@@ -192,7 +192,7 @@ class Topology(object):
         self._nodes.update(self._hosts)
 
         # connect connectors
-        for node_connector_wrapper in self._node_connectors.itervalues():
+        for node_connector_wrapper in set(self._node_connectors.values()):
             # local loopback doesn't have a target
             node_connector_wrapper._target = \
                 self._node_connectors[node_connector_wrapper._node_connector.target.connector_id] \
@@ -212,7 +212,7 @@ class Topology(object):
 
     @property
     def node_connectors(self):
-        return self._node_connectors.values()
+        return set(self._node_connectors.values())
 
     @property
     def switches(self):
@@ -221,12 +221,12 @@ class Topology(object):
         :return:
         :rtype: Iterable[SwitchConnectorWrapper]
         """
-        return self._switches.values()
+        return set(self._switches.values())
 
     @property
     def hosts(self):
-        return self._hosts.values()
+        return set(self._hosts.values())
 
     @property
     def nodes(self):
-        return self._nodes.values()
+        return set(self._nodes.values())

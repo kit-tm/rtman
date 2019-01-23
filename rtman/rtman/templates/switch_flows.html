@@ -13,7 +13,7 @@
 {% for flow in flows %}
 <h2>{{flow.id}}</h2>
 
-<pre>{%for k, v in flow.others.iteritems() %}{{k}}: {{v}}
+<pre>{%for k, v in flow.others.items() %}{{k}}: {{v}}
 {% endfor %}
 
 {% for m in flow.match %}{{m[0]}}: {{m[1]}}

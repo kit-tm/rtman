@@ -1,6 +1,6 @@
 import json
 
-from base import ODLBaseObject, IPPROTOCOL_UDP, IPPROTOCOL_TCP, ETHERTYPE_IP4, ETHERTYPE_IP6, ETHERTYPE_MPLS
+from odl_client.base_odlclient.openflow.base import ODLBaseObject, IPPROTOCOL_UDP, IPPROTOCOL_TCP, ETHERTYPE_IP4, ETHERTYPE_IP6, ETHERTYPE_MPLS
 from misc.dict_tools import merge_dicts
 
 
@@ -82,7 +82,7 @@ class BaseMatch(GenericMatch):
         :return:
         """
         result = kwargs.copy()
-        for k in kwargs.iterkeys():
+        for k in kwargs.keys():
             if k in cls.dependencies:
                 dependencies = cls.dependencies[k]
                 result.update(cls._inflate(dependencies))  # fixme: should not overwrite existing keys.
@@ -97,7 +97,7 @@ class BaseMatch(GenericMatch):
     @classmethod
     def _transform(cls, kwargs):
         result = {}
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             result[k] = cls.transformations.get(k, lambda x: x)(v)
         return result
 
@@ -135,7 +135,7 @@ class BaseMatch(GenericMatch):
         :return:
         """
         result = []
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             # let's say we have        "ethertype": ("ethernet-match" ,"ethernet-type", "type")
             # and the result should be:  {ethernet-match: {ethernet-type: {type: v}}}
 

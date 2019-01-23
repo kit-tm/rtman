@@ -220,7 +220,7 @@ class Host(ODLNode):
         :return: list of all known mac addresses of this host
         :rtype: list[str]
         """
-        return set(entry["mac"] for entry in self._known_addresses.itervalues())
+        return set(entry["mac"] for entry in self._known_addresses.values())
 
     @property
     def ip_addresses(self):
@@ -229,7 +229,7 @@ class Host(ODLNode):
         :return: list of all known mac addresses of this host
         :rtype: list[str]
         """
-        return set(entry["ip"] for entry in self._known_addresses.itervalues())
+        return set(entry["ip"] for entry in self._known_addresses.values())
 
 
     def _update(self, topology_dict):
@@ -401,7 +401,7 @@ class Switch(ODLNode):
             raise NotOwnConnectorException
 
     def list_connectors(self):
-        return self._connectors.values()
+        return set(self._connectors.values())
 
 
 

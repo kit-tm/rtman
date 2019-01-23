@@ -1,6 +1,6 @@
-from common import StreamID, UserToNetworkRequirements, InterfaceID, InterfaceCapabilities
-from dataframespec import DataFrameSpecification
-from trafficspec import TrafficSpecification
+from ieee802dot1qcc.common import StreamID, UserToNetworkRequirements, InterfaceID, InterfaceCapabilities
+from ieee802dot1qcc.dataframespec import DataFrameSpecification
+from ieee802dot1qcc.trafficspec import TrafficSpecification
 
 class Talker(object):
     """

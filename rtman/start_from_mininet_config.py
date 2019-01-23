@@ -54,7 +54,7 @@ class MacFix(IRTOdlClient):
         """
         res = super(MacFix, self)._build_nodes()
 
-        observed_addresses = set(inner for outer in [host.mac_addresses for host in self._hosts.itervalues()] for inner in outer)
+        observed_addresses = set(inner for outer in [host.mac_addresses for host in self._hosts.values()] for inner in outer)
         unsatisfied = self._macfix__mac_addresses.difference(observed_addresses)
         unexpected = observed_addresses.difference(self._macfix__mac_addresses)
         if len(unsatisfied) > 1:
@@ -153,8 +153,8 @@ class MininetStreamRegisterer(UNIClient):
 
     def start(self):
         if AUTO_ADD_STREAMS:
-            tojoin = list(self._talkers.itervalues())
-            for l in self._listeners.itervalues():
+            tojoin = list(self._talkers.values())
+            for l in self._listeners.values():
                 tojoin.extend(l)
             rtman.cumulative_join(*tojoin)
 
@@ -247,13 +247,13 @@ if __name__ == "__main__":
             ) for stream_desc in config["streams"]
         }
         if multistreams:
-            partialstreams = set.union(*(m.partials for m in multistreams.itervalues()))
+            partialstreams = set.union(*(m.partials for m in multistreams.values()))
         else:
             partialstreams = set()
 
         try:
             rtman.start()
-            print "Deploying flows"
+            print("Deploying flows")
             for partialstream in partialstreams:
                 rtman.odl_client.add_partialstream(partialstream)
             rtman.odl_client.update_and_deploy_schedule()

@@ -47,7 +47,7 @@ class SimpleUDPAdder(UNIClient):
         pass
 
     def fast_add(self, udp_port, bidirectional=False):
-        hosts = self._uni_server._odl_client._hosts.values()[:2]
+        hosts = list(self._uni_server._odl_client._hosts.values())[:2]
         self.add_udp_stream(hosts[0], hosts[1], None, udp_port)
         if bidirectional:
             self.add_udp_stream(hosts[1], hosts[0], udp_port, None)
@@ -125,12 +125,12 @@ try:
     del vars["__doc__"]
     del vars["__file__"]
     del vars["__package__"]
-    print ""
-    print "RTman available as   rtman . ODL Client available as   odl_client ."
-    print "also available:"
-    print "   udpadder.add_udp_stream(sender_host, receiver_host, udp_source_port, udp_destination_port)"
-    print "   udpadder.fast_add(udp_port)        add streams for two host, unidirectional"
-    print "   udpadder.fast_add(udp_port, True)  add streams for two hosts, bidirectional"
+    print("")
+    print("RTman available as   rtman . ODL Client available as   odl_client .")
+    print("also available:")
+    print("   udpadder.add_udp_stream(sender_host, receiver_host, udp_source_port, udp_destination_port)")
+    print("   udpadder.fast_add(udp_port)        add streams for two host, unidirectional")
+    print("   udpadder.fast_add(udp_port, True)  add streams for two hosts, bidirectional")
     rtman.get_shell(additional_vars=vars)
 except:
     traceback.print_exc()

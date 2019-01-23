@@ -4,7 +4,7 @@ import json as json_module
 import traceback
 from threading import Lock
 
-from node import Host, Switch, ODLNode
+from odl_client.base_odlclient.node import Host, Switch, ODLNode
 
 class APIException(Exception):
     """
@@ -44,11 +44,8 @@ class ODLClient(object):
 
                  "_nodes",  # type: dict[str, ODLNode]
 
-                 "_host_type",
-
-                 "_flows", "_flow_namespace", "_flow_lock",
-
-                 "_switch_type")
+                 "_flows", "_flow_namespace", "_flow_lock"
+                 )
 
     _host_type = Host
     _switch_type = Switch
@@ -94,9 +91,9 @@ class ODLClient(object):
 
         r = requests.request(method=method, url=self.baseurl+path, auth=(self.username, self.password), data=data)
         if r.status_code not in range(200,300):
-            print r.status_code
-            print data
-            print r.text
+            print(r.status_code)
+            print(data)
+            print(r.text)
             raise APIException(r.text)
         return r.text
 
@@ -112,15 +109,15 @@ class ODLClient(object):
 
         r = requests.request(method=method, url=self.baseurl+path, auth=(self.username, self.password), json=json)
         if r.status_code not in range(200, 300):
-            print r.status_code
-            print path
-            print json
+            print(r.status_code)
+            print(path)
+            print(json)
             exc = json_module.loads(r.text)
             if r.status_code == 409 and exc.get("errors", {"error": [{"error-tag": ""}]})["error"][0].get("error-tag", "") == "data-exists":
-                print "Already exists"
+                print("Already exists")
                 raise AlreadyExistsException(r.text)
             else:
-                print r.text
+                print(r.text)
                 raise APIException(r.text)
         if r.text:
             return r.json()
@@ -145,7 +142,7 @@ class ODLClient(object):
         :return:
         """
         mac_address = self.convert_mac_address(mac_address)
-        for node in self._hosts.itervalues():  # type: Host
+        for node in self._hosts.values():  # type: Host
             if mac_address in node.mac_addresses:
                 return node
 
@@ -328,7 +325,7 @@ class ODLClient(object):
                 set(f for f in s.flows if
                     f.entry_name.startswith(self._flow_namespace) and
                     f not in self._flows)
-                for s in self._switches.itervalues())
+                for s in self._switches.values())
         )
 
     @property

@@ -51,6 +51,9 @@ class PartialStream(object):
     def __repr__(self):
         return "PartialStream[%s  :: %s -> %s]" % (self.parent.name, self.sender.node_id, self._receiver.node_id)
 
+    def __hash__(self):
+        return hash(self.__repr__())
+
     @property
     def sender(self):
         """
@@ -114,6 +117,9 @@ class MultiStream(object):
         return (self._sender == other._sender) and \
                (self._flow_match == other._flow_match) and \
                (self._name == other._name)
+
+    def __hash__(self):
+        return hash(self.__repr__())
 
     def add_receiver(self, receiver):
         partialstream = self._partialstream_class(receiver, self)

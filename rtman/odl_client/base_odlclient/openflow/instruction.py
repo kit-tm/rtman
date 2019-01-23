@@ -1,5 +1,5 @@
-from base import ODLBaseObject
-from action import Action
+from odl_client.base_odlclient.openflow.base import ODLBaseObject
+from odl_client.base_odlclient.openflow.action import Action
 
 class Instruction(ODLBaseObject):
     """
