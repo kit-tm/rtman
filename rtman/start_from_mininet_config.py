@@ -171,7 +171,7 @@ class MininetStreamRegisterer(UNIClient):
 
 
 if __name__ == "__main__":
-    config_file = sys.argv[1] if len(sys.argv)>1 else "../orchestrate/topology.json"
+    config_file = sys.argv[1] if len(sys.argv)>1 else "../mininet/topology.json"
     wireshark_script = (sys.argv[2], config_file) if len(sys.argv)>2 else None
 
     with open(config_file, "r") as f:

@@ -32,7 +32,7 @@ class RTman(UNIServer):
     def __init__(self, odl_client, wireshark_script=None, web_address="localhost", web_port=8080):
         """
         :param args: args for ODLClient
-        :param str wireshark_script: path to a script that takes an interface name as argument and launches wireshark
+        :param Tuple[str, str] wireshark_script: path to a script that takes an interface name as argument and launches wireshark
         for that interface
         :param str web_address: Address/hostname to use when binding TCP socket for web server
         :param int web_port: TCP port for web server
