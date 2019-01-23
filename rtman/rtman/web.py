@@ -73,7 +73,7 @@ class RTmanWebHandler(BaseHTTPRequestHandler):
         for k, v in headers.items():
             self.send_header(k, v)
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(body.encode())
 
     def do_GET(self):
         """
