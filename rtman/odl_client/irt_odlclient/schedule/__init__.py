@@ -4,6 +4,8 @@ A schedule is defined as:
 a global transmission cycle time is set.
 
 """
+import logging
+
 from odl_client.base_odlclient.node import Host, Switch
 from odl_client.irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper, SwitchWrapper
 from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
@@ -291,9 +293,31 @@ class TASEntry(object):
     def __repr__(self):
         return super(TASEntry, self).__repr__()
 
+    @classmethod
+    def unify_gateopenintervals(cls, gate_open_intervals):
+        if len(gate_open_intervals) < 2:
+            return gate_open_intervals
+
+        gate_open_intervals = sorted(gate_open_intervals, key=lambda x: x[0])
+        result = []
+        i = 0
+        while i < len(gate_open_intervals)-1:
+            if gate_open_intervals[i][1] == gate_open_intervals[i+1][0]:
+                new_entry = (gate_open_intervals[i][0], gate_open_intervals[i+1][1])
+                gate_open_intervals = [new_entry] + gate_open_intervals[i+2::]
+                i = 0
+            else:
+                result.append(gate_open_intervals[i])
+                i += 1
+        result.append(gate_open_intervals[-1])
+        return result
+
+
+
     def __init__(self, queue, gate_open_intervals):
         self._queue = queue
-        self._gate_open_intervals = gate_open_intervals
+        self._gate_open_intervals = self.unify_gateopenintervals(gate_open_intervals)
+        logging.debug("simplified gate intervals: %s --> %s" % (gate_open_intervals, self._gate_open_intervals))
 
     @property
     def gate_open_intervals(self):
@@ -416,7 +440,7 @@ class Scheduler(object):
         """
         self._generate_new_schedule()
         self._generate_configuration_from_schedule()
-        print(self._configuration.flows)
+        logging.info(self._configuration.flows)
         return self._configuration
 
     @property

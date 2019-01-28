@@ -52,6 +52,7 @@ class StreamID(object):
                 while len(unique_id) < 4:
                     unique_id = "0" + unique_id
             else:
+                print(unique_id)
                 raise NotImplementedError()
         else:
             if len(unique_id) == 5:

@@ -48,7 +48,7 @@ class RTman(UNIServer):
         self._qcc_stream_manager = QccStreamManager(odl_client)
 
     def start(self, *uni_clients):
-        self._odl_client._build_nodes()
+        self._odl_client.start()
         self._web.start()
         super(RTman, self).start(*uni_clients)
 
@@ -60,6 +60,7 @@ class RTman(UNIServer):
             except:
                 traceback.print_exc()
         self._web.stop()
+        self._odl_client.stop()
 
     def cumulative_join(self, *args):
         for a in args:

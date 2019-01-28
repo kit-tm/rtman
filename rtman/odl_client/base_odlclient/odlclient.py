@@ -135,6 +135,12 @@ class ODLClient(object):
         self._build_nodes()
         return self._nodes[node_id]
 
+    def start(self):
+        self._build_nodes()
+
+    def stop(self):
+        pass
+
     def get_host_by_mac(self, mac_address):
         """
         get the host that has the given mac address
@@ -192,6 +198,7 @@ class ODLClient(object):
             if source_connector.target != dest_connector:
                 source_connector._connect_to(dest_connector)
                 topology_change_detected = True
+
         return topology_change_detected
 
     def info(self):

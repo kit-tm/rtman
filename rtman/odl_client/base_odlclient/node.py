@@ -339,7 +339,7 @@ class Switch(ODLNode):
     """
     ODLNode representing an OpenFlow switch
     """
-    __slots__ = ("_connectors", "_flows")
+    __slots__ = ("_connectors", "_flows", "_ip_address")
     _connector_cls = SwitchConnector
 
     def __init__(self, odlclient, inventory_dict):
@@ -380,6 +380,9 @@ class Switch(ODLNode):
         for table in inventory_dict["flow-node-inventory:table"]:
             if "flow" in table:
                 self._flows.update((FlowTableEntry.from_odl_inventory(self, inv) for inv in table["flow"]))  # fixme: use a loss-free flow table entry class here
+
+        self._ip_address = inventory_dict["flow-node-inventory:ip-address"]
+
         return topology_change_detected
 
     @property
@@ -403,5 +406,7 @@ class Switch(ODLNode):
     def list_connectors(self):
         return set(self._connectors.values())
 
-
+    @property
+    def ip_address(self):
+        return self._ip_address
 
