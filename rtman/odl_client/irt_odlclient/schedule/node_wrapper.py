@@ -96,15 +96,20 @@ class SwitchConnectorWrapper(NodeConnectorWrapper):
 
     QUEUE_CLS = Queue
 
-    __slots__ = ("_queues",)
+    __slots__ = ("_queues", "_irt_queues")
 
     def __init__(self, switch_connector, parent):
         super(SwitchConnectorWrapper, self).__init__(switch_connector, parent)
-        self._queues = {queue_id: self.QUEUE_CLS(queue_id, self) for queue_id in switch_connector.irt_queues}
+        self._queues = {queue_id: self.QUEUE_CLS(queue_id, self) for queue_id in switch_connector.queues}
+        self._irt_queues = {queue_id: self._queues[queue_id] for queue_id in switch_connector.irt_queues}
 
     @property
     def queues(self):
         return set(self._queues.values())
+
+    @property
+    def irt_queues(self):
+        return set(self._irt_queues.values())
 
     def get_queue(self, queue_id):
         return self._queues[queue_id]

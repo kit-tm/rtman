@@ -27,7 +27,7 @@ import traceback
 from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
 from start_empty_rtman import SimpleUDPAdder
-from odl_client.irt_odlclient.tas_handler import NETCONF_TrustNode_TASHandler
+from trustnode.tas_handler import NETCONF_TrustNode_TASHandler
 from rtman import RTman
 import logging
 

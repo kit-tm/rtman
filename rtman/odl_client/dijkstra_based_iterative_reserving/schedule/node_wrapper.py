@@ -7,7 +7,7 @@ class DijkstraSwitchConnectorWrapper(SwitchConnectorWrapper):
     def __init__(self, switch_connector, parent):
         super(DijkstraSwitchConnectorWrapper, self).__init__(switch_connector, parent)
         self._partialstreams = set()
-        self._irt_queue = next(iter(self._queues.values()))
+        self._irt_queue = next(iter(self._irt_queues.values()))
 
     @property
     def irt_queue(self):

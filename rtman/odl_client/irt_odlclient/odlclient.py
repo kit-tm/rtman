@@ -23,7 +23,7 @@ class IRTOdlClient(ReservingODLClient):
     _host_type = CapacityBasedHost
     _switch_type = CapacityBasedSwitch
 
-    def __init__(self, scheduler_cls, tas_handler, *args, **kwargs):
+    def __init__(self, scheduler_cls, tas_handler=None, *args, **kwargs):
         super(IRTOdlClient, self).__init__(*args, **kwargs)
         self._scheduler = scheduler_cls(self, IRT_FLOW_PRIORITY)  # type: Scheduler
         self._tas_handler = tas_handler if tas_handler else TASHandler()
@@ -45,7 +45,7 @@ class IRTOdlClient(ReservingODLClient):
     def _before_deploy_flows(self, flows):
         flows = set(flows)
         flows.update(self._flows_dropnonregistered)
-        self._tas_handler.deploy_tas_entries(self.configuration.tas_entries)
+        self._tas_handler.deploy_tas_entries(self.configuration.tas_entries, self.configuration.cycle_length, self.configuration.timeslot_length_nanoseconds)
         # hint: tas config is discarded as part of the configuration in self._generate_flowset
         return flows
 

@@ -7,7 +7,8 @@ from odl_client.base_odlclient.openflow.base import ETHERTYPE_IP4
 from odl_client.base_odlclient.openflow.instruction import Actions
 from odl_client.base_odlclient.openflow.match import BaseMatch
 from odl_client.dijkstra_based_iterative_reserving.schedule.node_wrapper import DijkstraTopology
-from odl_client.irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, Configuration, TASEntry
+from odl_client.irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, Configuration
+from odl_client.irt_odlclient.tas_handler import TASEntry
 from odl_client.irt_odlclient.schedule.node_wrapper import NodeWrapper, HostWrapper, SwitchConnectorWrapper
 from odl_client.irt_odlclient.stream import IRTPartialStream
 from odl_client.reserving_odlclient.stream import MultiStream
@@ -208,7 +209,7 @@ class DijkstraBasedScheduler(Scheduler):
         flows = set()
         tas_entries = set()
         tas_entry_builder = {
-            connector.connector_id: {queue.queue_id: set() for queue in connector.queues}
+            connector.connector_id: {queue.queue_id: set() for queue in connector.irt_queues}
             for connector in self._topology.node_connectors if isinstance(connector, SwitchConnectorWrapper)
         } # tas_entry_builder[connector_id][queue_id] == {(1,2), (4,5)}
 
@@ -278,7 +279,7 @@ class DijkstraBasedScheduler(Scheduler):
                     transmission_times
                 ))
 
-        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length)
+        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length, 1000)
 
 
     def _calculate_pathset(self, partialstreams, existing_paths):

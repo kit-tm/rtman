@@ -1,3 +1,4 @@
+import logging
 import time
 import requests
 import json as json_module
@@ -109,15 +110,13 @@ class ODLClient(object):
 
         r = requests.request(method=method, url=self.baseurl+path, auth=(self.username, self.password), json=json)
         if r.status_code not in range(200, 300):
-            print(r.status_code)
-            print(path)
-            print(json)
+            logging.debug("data: " + str(json))
             exc = json_module.loads(r.text)
             if r.status_code == 409 and exc.get("errors", {"error": [{"error-tag": ""}]})["error"][0].get("error-tag", "") == "data-exists":
-                print("Already exists")
+                logging.debug("Already exists")
                 raise AlreadyExistsException(r.text)
             else:
-                print(r.text)
+                logging.debug("response: " + str(r.text))
                 raise APIException(r.text)
         if r.text:
             return r.json()

@@ -237,9 +237,9 @@ class Configuration(object):
     Used for combining these two for handovers between classes
     """
 
-    __slots__ = ("_flows", "_tas_entries", "_scheduler", "_cycle_length")
+    __slots__ = ("_flows", "_tas_entries", "_scheduler", "_cycle_length", "_timeslot_length_nanoseconds")
 
-    def __init__(self, scheduler, flows, tas_entries, cycle_length):
+    def __init__(self, scheduler, flows, tas_entries, cycle_length, timeslot_length_nanoseconds):
         """
 
         :param flows:
@@ -249,6 +249,7 @@ class Configuration(object):
         self._flows = flows
         self._tas_entries = {}
         self._cycle_length = cycle_length
+        self._timeslot_length_nanoseconds = timeslot_length_nanoseconds
         for tas_entry in tas_entries:
             queue = tas_entry.queue
             switch_connector = queue.switch_connector  # type: SwitchConnectorWrapper
@@ -268,69 +269,16 @@ class Configuration(object):
         return self._flows
 
     @property
+    def timeslot_length_nanoseconds(self):
+        return self._timeslot_length_nanoseconds
+
+    @property
     def tas_entries(self):
         return self._tas_entries
 
     @property
     def cycle_length(self):
         return self._cycle_length
-
-
-class TASEntry(object):
-    """
-    TAS entry: the configuration for TAS gates for a given queue.
-
-    essentially holds a reference to the queue, and a set of open gate intervals (set of (start, end) tuples)
-    """
-    __slots__ = ("_queue", "_gate_open_intervals")
-
-    def toJSON(self):
-        return self.__str__()
-
-    def __str__(self):
-        return "%s  --  %s" % (self._queue.__str__(), " , ".join(str(i) for i in sorted(self._gate_open_intervals)))
-
-    def __repr__(self):
-        return super(TASEntry, self).__repr__()
-
-    @classmethod
-    def unify_gateopenintervals(cls, gate_open_intervals):
-        if len(gate_open_intervals) < 2:
-            return gate_open_intervals
-
-        gate_open_intervals = sorted(gate_open_intervals, key=lambda x: x[0])
-        result = []
-        i = 0
-        while i < len(gate_open_intervals)-1:
-            if gate_open_intervals[i][1] == gate_open_intervals[i+1][0]:
-                new_entry = (gate_open_intervals[i][0], gate_open_intervals[i+1][1])
-                gate_open_intervals = [new_entry] + gate_open_intervals[i+2::]
-                i = 0
-            else:
-                result.append(gate_open_intervals[i])
-                i += 1
-        result.append(gate_open_intervals[-1])
-        return result
-
-
-
-    def __init__(self, queue, gate_open_intervals):
-        self._queue = queue
-        self._gate_open_intervals = self.unify_gateopenintervals(gate_open_intervals)
-        logging.debug("simplified gate intervals: %s --> %s" % (gate_open_intervals, self._gate_open_intervals))
-
-    @property
-    def gate_open_intervals(self):
-        return self._gate_open_intervals
-
-    @property
-    def queue(self):
-        """
-        :trype: Queue
-        :return:
-        """
-        return self._queue
-
 
 
 class Scheduler(object):
@@ -353,7 +301,7 @@ class Scheduler(object):
         """
         self._odl_client = odl_client
         self._schedule = self.SCHEDULE_CLS(self)
-        self._configuration = Configuration(self, set(), set(), 1)
+        self._configuration = Configuration(self, set(), set(), 1, 1)
 
     def init_nodestructure(self):
         """
@@ -424,7 +372,7 @@ class Scheduler(object):
         """
         schedule = self._schedule
         # do fancy stuff
-        self._configuration = Configuration(self, None, None, None)
+        self._configuration = Configuration(self, None, None, None, None)
         raise NotImplementedError()
 
     def calculate_new_configuration(self):

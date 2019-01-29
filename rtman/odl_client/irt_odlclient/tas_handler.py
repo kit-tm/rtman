@@ -1,15 +1,71 @@
 import logging
 
-from odl_client.irt_odlclient.schedule import TASEntry
 from odl_client.irt_odlclient.schedule.node_wrapper import Queue
 import json
+
+
+class TASEntry(object):
+    """
+    TAS entry: the configuration for TAS gates for a given queue.
+
+    essentially holds a reference to the queue, and a set of open gate intervals (set of (start, end) tuples)
+    """
+    __slots__ = ("_queue", "_gate_open_intervals")
+
+    def toJSON(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "%s  --  %s" % (self._queue.__str__(), " , ".join(str(i) for i in sorted(self._gate_open_intervals)))
+
+    def __repr__(self):
+        return super(TASEntry, self).__repr__()
+
+    @classmethod
+    def unify_gateopenintervals(cls, gate_open_intervals):
+        if len(gate_open_intervals) < 2:
+            return gate_open_intervals
+
+        gate_open_intervals = sorted(gate_open_intervals, key=lambda x: x[0])
+        result = []
+        i = 0
+        while i < len(gate_open_intervals)-1:
+            if gate_open_intervals[i][1] == gate_open_intervals[i+1][0]:
+                new_entry = (gate_open_intervals[i][0], gate_open_intervals[i+1][1])
+                gate_open_intervals = [new_entry] + gate_open_intervals[i+2::]
+                i = 0
+            else:
+                result.append(gate_open_intervals[i])
+                i += 1
+        result.append(gate_open_intervals[-1])
+        return result
+
+
+
+    def __init__(self, queue, gate_open_intervals):
+        self._queue = queue
+        self._gate_open_intervals = self.unify_gateopenintervals(gate_open_intervals)
+        logging.debug("simplified gate intervals: %s --> %s" % (gate_open_intervals, self._gate_open_intervals))
+
+    @property
+    def gate_open_intervals(self):
+        return self._gate_open_intervals
+
+    @property
+    def queue(self):
+        """
+        :trype: Queue
+        :return:
+        """
+        return self._queue
+
 
 class TASHandler(object):
     __slots__ = ("_odl_client",  # type: IRTOdlClient
 
                 )
 
-    def deploy_tas_entries(self, tas_entries):
+    def deploy_tas_entries(self, tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds):
         logging.warning("not deploying TAS because it's unsupported in this network.")
 
     def start(self, odl_client):
@@ -25,6 +81,7 @@ class TASHandler(object):
 class NETCONF_Node(object):
 
     __slots__ = (
+        "_odl_client",
         "_tas_handler",
         "_node_id",
 
@@ -45,50 +102,6 @@ class NETCONF_Node(object):
 
     def umount_on_odl(self):
         raise NotImplementedError()
-
-
-class NETCONF_TrustNode_Node(NETCONF_Node):
-
-    def __init__(self, tas_handler, node_id):
-        super(NETCONF_TrustNode_Node, self).__init__(tas_handler, node_id)
-        self._ip_address = self._odl_client._switches[node_id].ip_address
-        self._port = 830
-        self._username = "root"
-        self._password = "innoroot"
-
-    def mount_on_odl(self):
-        self._odl_client._request_json(self.path_on_odl, method="PUT", json={
-            "node": {
-                "node-id": self._node_id,
-                "host": self._ip_address,
-                "port": self._port,
-                "username": self._username,
-                "password": self._password,
-                "tcp-only": False,
-                "schema-cache-directory": "schema",
-                "reconnect-on-changed-schema": False,
-                "connection-timeout-millis": 20000,
-                "default-request-timeout-millis": 60000,
-                "max-connection-attempts": 0,
-                "between-attempts-timeout-millis": 2000,
-                "sleep-factor": 1.5,
-                "keepalive-delay": 120,
-
-            }
-        })
-        logging.info("netconf %s mounted" % self._node_id)
-
-    @property
-    def path_on_odl(self):
-        return "config/network-topology:network-topology/topology/topology-netconf/node/%s" % self._node_id
-
-    @property
-    def path_to_tas_config_on_odl(self):
-        return "%s/yang-ext:mount/ietf-interfaces:interfaces/" % self.path_on_odl
-
-    def umount_on_odl(self):
-        self._odl_client._request_json(self.path_on_odl, method="DELETE")
-        logging.info("netconf %s unmounted" % self._node_id)
 
 
 class NETCONF_TASHandler(TASHandler):
@@ -129,12 +142,4 @@ class NETCONF_TASHandler(TASHandler):
     @property
     def odl_client(self):
         return self._odl_client
-
-
-class NETCONF_TrustNode_TASHandler(NETCONF_TASHandler):
-
-    Node_cls = NETCONF_TrustNode_Node
-
-    def deploy_tas_entries(self, tas_entries):
-        super(NETCONF_TrustNode_TASHandler, self).deploy_tas_entries(tas_entries)
 

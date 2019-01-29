@@ -38,7 +38,8 @@ class CapacityBasedSwitchConnector(SwitchConnector):
     __slots__ = (
         "_maximum_bandwidth",
         "_irt_bandwidth_limit",
-        "_irt_queues"
+        "_irt_queues",
+        "_queues"
     )
 
     def __init__(self, parent, inventory_dict):
@@ -46,10 +47,15 @@ class CapacityBasedSwitchConnector(SwitchConnector):
         self._maximum_bandwidth = MAXIMUM_BANDWIDTH
         self.irt_bandwidth_limit = self._maximum_bandwidth
         self._irt_queues = {7}
+        self._queues = list(range(8))
 
     @property
     def irt_queues(self):
         return set(self._irt_queues)
+
+    @property
+    def queues(self):
+        return set(self._queues)
 
     @property
     def maximum_bandwidth(self):

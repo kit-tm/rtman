@@ -220,13 +220,13 @@ class RTmanWeb(object):
                         flowentry["id"] = v
                     elif k == "instructions":
                         instructions = []
-                        for vk, vv in sorted(flatten_dict(v.get("instruction", {})).items(), key=lambda x, y: x):
+                        for vk, vv in sorted(flatten_dict(v.get("instruction", {})).items(), key=lambda x: x[0]):
                             if not vk.endswith("order"):
                                 instructions.append(("instruction/%s" % vk, vv))
                         flowentry["instructions"] = instructions
                     elif k == "match":
                         matches = []
-                        for vk, vv in sorted(flatten_dict(v).items(), key=lambda x, y: x):
+                        for vk, vv in sorted(flatten_dict(v).items(), key=lambda x: x[0]):
                             if not vk.endswith("order"):
                                 matches.append(("match/%s" % vk, vv))
                         flowentry["match"] = matches
