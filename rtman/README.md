@@ -123,9 +123,16 @@ scheduler should be implemented by overwriting the functions
 * `_generate_new_schedule` to create the schedule object structure
 * `_generate_configuration_from_schedule` to implement the SDN/TAS splitting
 
+`irt_odlclient.tas_handler` contains stub classes for deploying TAS configuration to
+switches. 
+
 ###Dijkstra-based iterative reserving
 `ijkstra_based_iterative_reserving.schedule` contains a scheduler implementation with
 the before-mentioned functionality.
+
+###TrustNode
+Contains an implementation of a TASHandler to deploy TAS configuration to TrustNode
+switches via NETCONF.
 
 802.1Qcc
 --------
@@ -170,6 +177,7 @@ There are several ways to start RTman.
 * If you need an RTman instance without any UNI Client, use `start_empty_rtman.py`.
   * To create a start-up script for your own UNI Client(s), copy this file,
     instanciate your UNI Client(s), and hand them to the `rtman.start()` call.
+  * To use the TrustNode NETCONF TASHandler, you may use `start_empty_rtman_trustnode_netconf.py` instead.
 * If you start RTman to connect to a [mininet](../mininet) set-up, use 
   `start_from_mininet_config.py` script. 
   As argument, the script takes the same topology.json file as the mininet orchestration.
