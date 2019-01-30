@@ -1,5 +1,5 @@
 """
-A minimal script to start an empty RTman with a single stream.
+A minimal script to start an empty RTman with a NETCONF/TrustNode TAS handler.
 
 configure a few settings here:
 """
@@ -51,8 +51,6 @@ if __name__ == "__main__":
 
     try:
         rtman.start(udpadder)
-        udpadder.fast_add(6000)
-        udpadder.fast_add(6001)
     except:
         traceback.print_exc()
 
@@ -65,7 +63,8 @@ if __name__ == "__main__":
         rtman.get_shell({
             "rtman": rtman,
             "odl_client": odl_client,
-            "udpadder": udpadder
+            "udpadder": udpadder,
+            "tas_handler": odl_client._tas_handler
         })
     except:
         traceback.print_exc()
