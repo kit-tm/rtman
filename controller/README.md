@@ -8,6 +8,10 @@ To set up the controller, run this command inside a fresh ODL Oxygen:
 
 `feature:install odl-l2switch-switch odl-restconf`
 
+For netconf support, additionally run this:
+
+`feature:install odl-restconf-all odl-netconf-connector-all odl-netconf-mdsal`
+
 Configuration
 -------------
 
