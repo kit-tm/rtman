@@ -211,40 +211,21 @@ class ETFA2019Scheduler(Scheduler):
             mpls_label = self.get_multistream_mpls_label(multistream_name)
             for switch_name, tps in multistream_tps_by_switch.items():  # type: str, set[MPLSTransmissionPoint]
 
-                # ETFA_CHANGE we need to use trustnode-based matches:
-                # udp or tcp dest port, dest ip, ip-proto, ethertype
-
-                # thus, we also don't need to set mpls labels
-
-
-                # actions structure:
-                # first, forward internal (ie, don't modify target addresses)
-                # then, forward to hosts (ie, modify target addresses)
-                actions_forward_internal = []  # for parts 1-3
-                actions_forward_external = []  # for part  4
-
-                # matches are udp_dest_port for ingress switches, MPLS label for others.
-                # select match
-                # and since we are on it, add part 1 of actions structure as well, if needed.
+                # ETFA_CHANGE we need to use trustnode-fpga-based matches and actions:
+                # udp or tcp dest port, dest ip, ip-proto, ethertype for match
+                # out-port or set-queue for actions
                 anytp = next(iter(tps))
                 match = anytp.multistream.flow_match  # fixme: make sure this is correctly set by the UNI handler
+                actions = []
 
                 # now, build parts 2 and 4 of actions structure
                 for tp in tps:
                     connector = tp.switch_connector
                     queue_id = connector.irt_queue.queue_id
-                    if tp.is_to_host:
-                        actions_forward_external.extend((
-                            ChangeDstIPAction(connector.target.parent.ip_addresses.pop()),
-                            ChangeDstMacAction(connector.target.parent.mac_addresses.pop()),
-                            SetQueueAction(queue_id),
-                            OutputAction(connector)
-                        ))
-                    else:
-                        actions_forward_internal.extend((
-                            SetQueueAction(queue_id),
-                            OutputAction(connector)
-                        ))
+                    actions.extend((
+                        SetQueueAction(queue_id),
+                        OutputAction(connector)
+                    ))
                     # while we're here, let's sort the tp's transmission interval into tas_entry_builder
                     tas_entry_builder[connector.connector_id][queue_id].update(tp.transmission_times)
 
