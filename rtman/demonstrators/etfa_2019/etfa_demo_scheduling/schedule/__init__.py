@@ -194,7 +194,7 @@ class ETFA2019Scheduler(Scheduler):
 
                 transmission_slot += 1
 
-                new_schedule._cycle_length = transmission_slot
+                new_schedule._cycle_length = max(transmission_slot, 1000)  #
 
         # save results to self
         self._schedule = new_schedule
@@ -233,7 +233,7 @@ class ETFA2019Scheduler(Scheduler):
                 flows.add(FlowTableEntry(
                     self._odl_client.switches[switch_name],
                     match,
-                    (Actions(actions_forward_internal+actions_forward_external),),
+                    (Actions(actions),),
                     self._flow_priority,
                     "%s__%s__%s" % (self._odl_client.flow_namespace, multistream_name, switch_name)
                 ))
@@ -245,7 +245,7 @@ class ETFA2019Scheduler(Scheduler):
                     transmission_times
                 ))
 
-        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length, 1000)
+        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length, 1000000)
 
 
     def _calculate_pathset(self, partialstreams, existing_paths):

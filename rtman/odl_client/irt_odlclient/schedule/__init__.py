@@ -241,9 +241,11 @@ class Configuration(object):
 
     def __init__(self, scheduler, flows, tas_entries, cycle_length, timeslot_length_nanoseconds):
         """
-
-        :param flows:
-        :param Set[TASEentry] tas_entries:
+        :param scheduler: scheduler this configuration was created from
+        :param Iterable[FlowTableEntry] flows: flows to deploy for the schedule
+        :param Set[TASEentry] tas_entries: tas entries to deploy for the schedule
+        :param int cycle_length: cycle length in number of timeslots
+        :param timeslot_length_nanoseconds: timeslot length in nanoseconds
         """
         self._scheduler = scheduler
         self._flows = flows

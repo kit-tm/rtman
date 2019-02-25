@@ -200,7 +200,7 @@ class DijkstraBasedScheduler(Scheduler):
 
                 transmission_slot += 1
 
-                new_schedule._cycle_length = transmission_slot
+                new_schedule._cycle_length = max(transmission_slot, 1000)
 
         # save results to self
         self._schedule = new_schedule
