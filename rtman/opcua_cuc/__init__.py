@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, "..")
 import time
+from datetime import datetime
 
 from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.talker import Talker
@@ -16,17 +17,14 @@ import opcua_client
 import threading
 
 class OpcUaCuc(UNIClient):
-    __slots__ = ("test_server", "test_client", "client", "generate_endpoint", "generate_status_feedback")
+    __slots__ = ("event", "test_server", "test_client", "client", "generate_endpoint", "generate_status_feedback")
 
 
     def __init__(self, uni_server):
         super(OpcUaCuc, self).__init__(uni_server)
+        self.event = threading.Event()
         # self.test_server = opcua_test_server.opcua_test_server()
         # self.test_client = opcua_test_client.opcua_client("opc.tcp://localhost:4840/freeopcua/server/")
-
-
-    def stop(self):
-        print "opcua stop"
 
 
     def test_start(self):
@@ -180,14 +178,28 @@ class OpcUaCuc(UNIClient):
 
         # self.write_model()
 
-
         talker, listener = self.generate_endpoint(address_talker, address_listener)
         return talker, listener
 
 
+    def reservation(self, event):
+        print "reservation start"
+        while(event.isSet()):
+            print "reservation " + str(datetime.now())
+
+            # talker, listener = self.generate_endpoint(address_talker="opc.tcp://192.168.250.2:4840/", address_listener="opc.tcp://192.168.250.3:4840/")
+            # # self._uni_server.cumulative_join(talker, listener)
+            # talker, listener = self.generate_status_feedback(address_talker="opc.tcp://192.168.250.2:4840/", address_listener="opc.tcp://192.168.250.3:4840/")
+            time.sleep(0.5)
+
     def start(self):
         print "opcua start"
+        self.event.set()
+        reservation1 = threading.Thread(name="reservation1", target=self.reservation, args=(self.event,))
+        reservation1.start()
 
-        talker, listener = self.generate_endpoint(address_talker="opc.tcp://192.168.250.2:4840/", address_listener="opc.tcp://192.168.250.3:4840/")
-        # self._uni_server.cumulative_join(talker, listener)
-        talker, listener =  self.generate_status_feedback(address_talker="opc.tcp://192.168.250.2:4840/", address_listener="opc.tcp://192.168.250.3:4840/")
+
+    def stop(self):
+        print "opcua stop"
+        self.event.clear()
+

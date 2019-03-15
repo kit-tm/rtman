@@ -393,7 +393,6 @@ class opcua_client:
         )
 
 if __name__ == "__main__":
-
     c = opcua_client(address="opc.tcp://192.168.250.2:4840/freeopcua/server/")
 
     try:
