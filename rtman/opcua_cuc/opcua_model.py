@@ -1,7 +1,5 @@
 import sys
 sys.path.insert(0, "..")
-import time
-from opcua import Client
 
 class opcua_model:
     """
@@ -13,22 +11,227 @@ class opcua_model:
         class ConnectionRequestList:
 
             DestinationAddress = ""
+            ErrorCode = ""
+            Latency = ""
             SourceAddress = ""
+            Status = ""
 
         ConnectionRequestList = [ConnectionRequestList(), ConnectionRequestList()]
 
-        class NetworkInterfaceList:
+        class InterfaceList:
 
             Ipv4 = ""
             Ipv6 = ""
             MacAddress = ""
             Name = ""
 
-        NetworkInterfaceList = [NetworkInterfaceList(), NetworkInterfaceList(), NetworkInterfaceList()]
+        InterfaceList = [InterfaceList(), InterfaceList(), InterfaceList()]
 
-    class DeviceInformationSet:
+        class TsnEndpointList:
 
-        class DeviceInformation:
+            class Listener:
+
+                class EndStationInterfaces:
+
+                    class InterfaceId:
+
+                        MacAddress = ""
+                        Name = ""
+
+                class InterfaceCapabilities:
+
+                    CbSequenceTypeList = ""
+                    CbStreamIdenTypeList = ""
+                    VlanTagCapable = ""
+
+                class Status:
+
+                    class AccumulatedLatency:
+
+                        AccumulatedLatency = ""
+
+                    class FailedInterfaces:
+
+                        pass
+
+                    class InterfaceConfiguration:
+
+                        class Ieee802MacAddresses:
+
+                            DestinationMacAddress = ""
+                            SourceMacAddress = ""
+
+                        class Ieee802VlanTag:
+
+                            PriorityCodePoint = ""
+                            VlanId = ""
+
+                        class IpV4Tuple:
+
+                            DestinationIpAddress = ""
+                            DestinationPort = ""
+                            Dscp = ""
+                            Protocol = ""
+                            SourceIpAddress = ""
+                            SourcePort = ""
+
+                        class IpV6Tuple:
+
+                            DestinationIpAddress = ""
+                            DestinationPort = ""
+                            Dscp = ""
+                            Protocol = ""
+                            SourceIpAddress = ""
+                            SourcePort = ""
+
+                        class Ieee802VlanTag:
+
+                            PriorityCodePoint = ""
+                            VlanId = ""
+
+                        TimeAwareOffset = ""
+
+                    class StatusInfo:
+
+                        FailureCode = ""
+                        ListenerStatus = ""
+                        TalkerStatus = ""
+
+                    class StreamId:
+
+                        MacAddress = ""
+                        UniqueId = ""
+
+                class StreamId:
+                    MacAddress = ""
+                    UniqueId = ""
+
+                class UserToNetworkRequirements:
+                    MaxLatency = ""
+                    NumSeamlessTrees = ""
+
+            Listener = [Listener]
+
+
+            class Talker:
+
+                class DataFrameSpecification:
+
+                    class IpV4Tuple:
+
+                        DestinationIpAddress = ""
+                        DestinationPort = ""
+                        Dscp = ""
+                        Protocol = ""
+                        SourceIpAddress = ""
+                        SourcePort = ""
+
+                class EndStationInterfaces:
+
+                    class InterfaceId:
+
+                        MacAddress = ""
+                        Name = ""
+
+                class InterfaceCapabilities:
+
+                    CbSequenceTypeList = ""
+                    CbStreamIdenTypeList = ""
+                    VlanTagCapable = ""
+
+                class Status:
+
+                    class AccumulatedLatency:
+
+                        AccumulatedLatency = ""
+
+                    class FailedInterfaces:
+
+                        pass
+
+                    class InterfaceConfiguration:
+
+                        class Ieee802MacAddresses:
+
+                            DestinationMacAddress = ""
+                            SourceMacAddress = ""
+
+                        class Ieee802VlanTag:
+
+                            PriorityCodePoint = ""
+                            VlanId = ""
+
+                        class IpV4Tuple:
+
+                            DestinationIpAddress = ""
+                            DestinationPort = ""
+                            Dscp = ""
+                            Protocol = ""
+                            SourceIpAddress = ""
+                            SourcePort = ""
+
+                        class IpV6Tuple:
+
+                            DestinationIpAddress = ""
+                            DestinationPort = ""
+                            Dscp = ""
+                            Protocol = ""
+                            SourceIpAddress = ""
+                            SourcePort = ""
+
+                        class Ieee802VlanTag:
+
+                            PriorityCodePoint = ""
+                            VlanId = ""
+
+                        TimeAwareOffset = ""
+
+                    class StatusInfo:
+
+                        FailureCode = ""
+                        ListenerStatus = ""
+                        TalkerStatus = ""
+
+                    class StreamId:
+
+                        MacAddress = ""
+                        UniqueId = ""
+
+                class StreamId:
+                    MacAddress = ""
+                    UniqueId = ""
+
+                class StreamRank:
+
+                    Rank = ""
+
+                class TrafficSpecification:
+
+                    class Interval:
+
+                        Denominator = ""
+                        Numerator = ""
+
+                    MaxFrameSize = ""
+                    MaxFramesPerInterval = ""
+
+                    class TSpecTimeAware:
+
+                        EarliestTransmitOffset = ""
+                        Jitter = ""
+                        LatestTransmitOffset = ""
+
+                    TransmissionSelection = ""
+
+                class UserToNetworkRequirements:
+                    MaxLatency = ""
+                    NumSeamlessTrees = ""
+
+            Talker = [Talker]
+
+    class DeviceIdentificationSet:
+
+        class DeviceIdentification:
 
             Description = ""
             Manufacturer = ""
@@ -36,7 +239,7 @@ class opcua_model:
             ProductId = ""
             SerialNumber = ""
 
-        DeviceInformation = DeviceInformation()
+        DeviceIdentification = DeviceIdentification()
 
     def __init__(self):
         pass

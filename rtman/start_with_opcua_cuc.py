@@ -28,12 +28,14 @@ import traceback
 from rtman import RTman
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
 from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
+from trustnode.tas_handler import NETCONF_TrustNode_TASHandler
 from opcua_cuc import OpcUaCuc
 
 odl_client = IRTOdlClient(
     hostname=ODL_HOSTNAME,
     port=ODL_PORT,
-    scheduler_cls=DijkstraBasedScheduler
+    scheduler_cls=DijkstraBasedScheduler,
+    tas_handler = NETCONF_TrustNode_TASHandler()
 )
 
 rtman = RTman(
