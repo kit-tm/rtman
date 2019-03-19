@@ -29,7 +29,6 @@ class UNIServer(object):
         this call will block until all changes have been deployed.
         :param args: talkers and listeners to add
         :return:
-        :rtype: list[Status]
         """
         raise NotImplementedError()
 
@@ -40,7 +39,6 @@ class UNIServer(object):
         this call will block until all changes have been deployed.
         :param args: talkers and listeners to remove
         :return:
-        :rtype: list[Status]
         """
         raise NotImplementedError()
 
@@ -102,5 +100,14 @@ class UNIClient(object):
         Stop the component
         This may add/remove listeners to the UNI server.
         :return: None
+        """
+        raise NotImplementedError()
+
+    def distribute_status(self, status):
+        """
+        Receive a status object associated with a talker or listener object.
+        Note that a Status object always contains the associated Talker or Listener objects.
+        :param Status status: status object to handle
+        :return:
         """
         raise NotImplementedError()

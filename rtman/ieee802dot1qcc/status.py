@@ -52,15 +52,21 @@ class Status(object):
         "_status_info",  # type: StatusInfo
         "_accumulated_latency",  # type: int
         "_interface_configuration",  # type: unknown. fixme: implement!
-        "_failed_interfaces"  # type: iterable[InterfaceID]
+        "_failed_interfaces",  # type: iterable[InterfaceID]
+        "_associated_talkerlistener"  # type: Talker or Listener
     )
 
-    def __init__(self, stream_id, status_info, accumulated_latency, interface_configuration, failed_interfaces):
+    def __init__(self, stream_id, status_info, accumulated_latency, interface_configuration, failed_interfaces, associated_talkerlistener):
         self._stream_id = stream_id
         self._status_info = status_info
         self._accumulated_latency = accumulated_latency
         self._interface_configuration = interface_configuration
         self._failed_interfaces = failed_interfaces
+        self._associated_talkerlistener = associated_talkerlistener
+
+    @property
+    def associated_talker_or_listener(self):
+        return self._associated_talkerlistener
 
     @property
     def stream_id(self):
