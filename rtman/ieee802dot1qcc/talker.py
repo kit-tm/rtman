@@ -15,10 +15,11 @@ class Talker(object):
         "_traffic_specification",  # type: TrafficSpecification
         "_user_to_network_requirements",  # type: UserToNetworkRequirements
         "_interface_capabilities",  # type: InterfaceCapabilities
-        "_name"  # type: str
+        "_name",  # type: str
+        "_uni_client"  # type: UNIClient
     )
 
-    def __init__(self, stream_id, stream_rank, end_station_interfaces, data_frame_specification,
+    def __init__(self, uni_client, stream_id, stream_rank, end_station_interfaces, data_frame_specification,
                  traffic_specification, user_to_network_requirements, interface_capabilities, name=None):
         self._stream_id = stream_id
         self._stream_rank = stream_rank
@@ -28,6 +29,11 @@ class Talker(object):
         self._user_to_network_requirements = user_to_network_requirements
         self._interface_capabilities = interface_capabilities
         self._name = name
+        self._uni_client = uni_client
+
+    @property
+    def uni_client(self):
+        return self._uni_client
 
     @property
     def stream_id(self):

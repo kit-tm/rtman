@@ -99,6 +99,7 @@ class MininetStreamRegisterer(UNIClient):
             unique_id += 1
 
             self._talkers[stream_desc["name"]] = Talker(
+                uni_client=self,
                 stream_id=stream_id,
                 stream_rank=1,
                 end_station_interfaces={
@@ -135,6 +136,7 @@ class MininetStreamRegisterer(UNIClient):
 
             self._listeners[stream_desc["name"]] = [
                 Listener(
+                    uni_client=self,
                     stream_id=stream_id,
                     end_station_interfaces={
                         InterfaceID(next(iter(receiver.mac_addresses)), receiver.get_connector().connector_id)},

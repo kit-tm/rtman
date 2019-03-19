@@ -74,6 +74,7 @@ class SimpleUDPAdder(UNIClient):
         assert udp_source_port is not None or udp_destination_port is not None  # required in StreamID generator
         stream_id = StreamID(next(iter(sender_host.mac_addresses)), udp_source_port if udp_source_port else udp_destination_port)
         talker = Talker(
+            self,
             stream_id=stream_id,
             stream_rank=1,
             end_station_interfaces={
@@ -89,6 +90,7 @@ class SimpleUDPAdder(UNIClient):
             name=str(stream_id).replace(":", "--")
         )
         listener = Listener(
+            self,
             stream_id,
             end_station_interfaces={
                 InterfaceID(next(iter(receiver_host.mac_addresses)), receiver_host.get_connector().connector_id)

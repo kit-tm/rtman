@@ -5,14 +5,20 @@ class Listener(object):
         "_stream_id",  # type: StreamID
         "_end_station_interfaces",  # type: iterable[InterfaceID]
         "_user_to_network_requirements",  # type: UserToNetworkRequirements
-        "_interface_capabilities"  # type: InterfaceCapabilities
+        "_interface_capabilities",  # type: InterfaceCapabilities
+        "_uni_client"  # type: UNIClient
     )
 
-    def __init__(self, stream_id, end_station_interfaces, user_to_network_requirements, interface_capabilities):
+    def __init__(self, uni_client, stream_id, end_station_interfaces, user_to_network_requirements, interface_capabilities):
         self._stream_id = stream_id
         self._end_station_interfaces = end_station_interfaces
         self._user_to_network_requirements = user_to_network_requirements
         self._interface_capabilities = interface_capabilities
+        self._uni_client = uni_client
+
+    @property
+    def uni_client(self):
+        return self._uni_client
 
     @property
     def stream_id(self):
