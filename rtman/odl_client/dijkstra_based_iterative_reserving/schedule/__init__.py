@@ -10,9 +10,10 @@ from odl_client.dijkstra_based_iterative_reserving.schedule.node_wrapper import 
 from odl_client.irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, Configuration
 from odl_client.irt_odlclient.tas_handler import TASEntry
 from odl_client.irt_odlclient.schedule.node_wrapper import NodeWrapper, HostWrapper, SwitchConnectorWrapper
-from odl_client.irt_odlclient.stream import IRTPartialStream
+from odl_client.irt_odlclient.stream import IRTPartialStream, FailureCode
 from odl_client.reserving_odlclient.stream import MultiStream
 
+TRANSMISSION_SLOT_LENGTH = 1000
 
 mpls_counter = 32
 
@@ -55,6 +56,7 @@ class PathSet(object):
             self._by_multistream[partialstream.parent.name][partialstream.identifier] = path
         except KeyError:
             self._by_multistream[partialstream.parent] = {partialstream.identifier: path}
+        partialstream.set_status(FailureCode.NoFailure, TRANSMISSION_SLOT_LENGTH*(len(path)-2))
 
     def get_path(self, partialstream):
         return self._by_partialstream[partialstream.name]
@@ -279,7 +281,7 @@ class DijkstraBasedScheduler(Scheduler):
                     transmission_times
                 ))
 
-        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length, 1000)
+        self._configuration = Configuration(self, flows, tas_entries, self._schedule.cycle_length, TRANSMISSION_SLOT_LENGTH)
 
 
     def _calculate_pathset(self, partialstreams, existing_paths):
@@ -382,5 +384,6 @@ class DijkstraBasedScheduler(Scheduler):
             # this resulted in a reverse path, without hosts. let's fix this:
             raw_path = [source_host] + raw_path[::-1] + [destination_host]
             pathset.add_path(partialstream, raw_path)
+        next(iter(partialstreams)).parent.set_status(FailureCode.NoFailure)
 
         return pathset

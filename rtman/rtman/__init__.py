@@ -72,6 +72,7 @@ class RTman(UNIServer):
                 raise Exception("wrong type: %s" % a.__repr__())
         self._odl_client.set_partialstreams(self._qcc_stream_manager.get_partialstreams())
         self._odl_client.update_and_deploy_schedule()
+        self._qcc_stream_manager.check_for_status_updates()
 
     def cumulative_leave(self, *args):
         for a in args:
@@ -83,6 +84,7 @@ class RTman(UNIServer):
                 raise Exception("wrong type: %s" % a.__repr__())
         self._odl_client.set_partialstreams(self._qcc_stream_manager.get_partialstreams())
         self._odl_client.update_and_deploy_schedule()
+        self._qcc_stream_manager.check_for_status_updates()
 
     @property
     def odl_client(self):

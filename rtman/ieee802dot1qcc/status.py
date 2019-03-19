@@ -56,6 +56,9 @@ class Status(object):
         "_associated_talkerlistener"  # type: Talker or Listener
     )
 
+    def __str__(self):
+        return "Status: %s -- status %s, latency %d" % (str(self._stream_id), str(self._status_info), self._accumulated_latency)
+
     def __init__(self, stream_id, status_info, accumulated_latency, interface_configuration, failed_interfaces, associated_talkerlistener):
         self._stream_id = stream_id
         self._status_info = status_info
@@ -63,6 +66,9 @@ class Status(object):
         self._interface_configuration = interface_configuration
         self._failed_interfaces = failed_interfaces
         self._associated_talkerlistener = associated_talkerlistener
+
+    def notify_uni_client(self):
+        self._associated_talkerlistener.uni_client.distribute_status(self)
 
     @property
     def associated_talker_or_listener(self):
@@ -100,6 +106,9 @@ class StatusInfo(object):
         self._talker_status = TalkerStatus(talker_status)
         self._listener_status = ListenerStatus(listener_status)
         self._failure_code = FailureCode(failure_code)
+
+    def __str__(self):
+        return "%s, %s, %s" % (self._talker_status, self._listener_status, self._failure_code)
 
     @property
     def talker_status(self):

@@ -1,3 +1,5 @@
+from ieee802dot1qcc.status import FailureCode
+
 """
 An IRT stream is a stream with additional properties
  * A transmission schedule: streams follow a regular transmission schedule: every n nanoseconds, a frame of a certain
@@ -48,11 +50,41 @@ class RegularTransmissionSchedule(object):
 
 
 class IRTPartialStream(PartialStream):
-    pass
+
+    __slots__ = (
+        "_status_code",  # type: FailureCode
+        "_latency",
+        "_status_changed"
+    )
+
+    def __init__(self, receiver, parent):
+        super(IRTPartialStream, self).__init__(receiver, parent)
+        self._latency = 0
+        self._status_code = FailureCode.NoFailure
+        self._status_changed = False
+
+    @property
+    def latency(self):
+        return self._latency
+
+    @property
+    def status_code(self):
+        return self._status_code
+
+    def set_status(self, status_code, latency):
+        if status_code != self._status_code or self._latency != latency:
+            self._status_changed = True
+        self._status_code = status_code
+        self._latency = latency
 
 class IRTMultiStream(MultiStream):
 
-    __slots__ = ("_transmission_schedule", "_maximum_latency", "_maximum_jitter")
+    __slots__ = ("_transmission_schedule", "_maximum_latency", "_maximum_jitter",
+
+                 "_status_changed",
+                 "_max_latency",
+                 "_status_code"  # type: FailureCode
+                 )
 
     _partialstream_class = IRTPartialStream
 
@@ -73,6 +105,34 @@ class IRTMultiStream(MultiStream):
         self._transmission_schedule = transmission_schedule
         self._maximum_latency = maximum_latency
         self._maximum_jitter = maximum_jitter
+        self._max_latency = 0
+        self._status_code = FailureCode.NoFailure
+        self._status_changed = False
+
+    def set_status(self, status_code):
+        """
+        set all fields for calculating status.
+        only call after having done this for all partialstreams.
+        :return: None
+        """
+        if self._status_code != status_code:
+            self._status_code = status_code
+            self._status_changed = True
+
+        max_latency = 0
+        for partialstream in self._partials:
+            max_latency = max(max_latency, partialstream.latency)
+        if max_latency != self._max_latency:
+            self._status_changed = True
+            self._max_latency = max_latency
+
+    @property
+    def max_latency(self):
+        return self._max_latency
+
+    @property
+    def status_code(self):
+        return self._status_code
 
     @property
     def bandwidth(self):

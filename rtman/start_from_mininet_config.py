@@ -163,6 +163,9 @@ class MininetStreamRegisterer(UNIClient):
     def stop(self):
         pass
 
+    def distribute_status(self, status):
+        print(status)
+
     @property
     def talkers(self):
         return self._talkers

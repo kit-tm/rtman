@@ -121,8 +121,8 @@ class MultiStream(object):
     def __hash__(self):
         return hash(self.__repr__())
 
-    def add_receiver(self, receiver):
-        partialstream = self._partialstream_class(receiver, self)
+    def add_receiver(self, receiver, **kwargs):
+        partialstream = self._partialstream_class(receiver, self, **kwargs)
         self._partials.append(partialstream)
         return partialstream
 

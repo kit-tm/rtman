@@ -53,6 +53,9 @@ class SimpleUDPAdder(UNIClient):
     def stop(self):
         pass
 
+    def distribute_status(self, status):
+        print(status)
+
     def fast_add(self, udp_port, bidirectional=False):
         hosts = list(self._uni_server._odl_client._hosts.values())[:2]
         try:
