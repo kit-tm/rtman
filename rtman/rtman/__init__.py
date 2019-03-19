@@ -62,7 +62,7 @@ class RTman(UNIServer):
         self._web.stop()
         self._odl_client.stop()
 
-    def cumulative_join(self, *args):
+    def cumulative_join(self, uni_client, *args):
         for a in args:
             if isinstance(a, Listener):
                 self._qcc_stream_manager.add_listener(a)
@@ -73,7 +73,7 @@ class RTman(UNIServer):
         self._odl_client.set_partialstreams(self._qcc_stream_manager.get_partialstreams())
         self._odl_client.update_and_deploy_schedule()
 
-    def cumulative_leave(self, *args):
+    def cumulative_leave(self, uni_client, *args):
         for a in args:
             if isinstance(a, Listener):
                 self._qcc_stream_manager.remove_listener(a)

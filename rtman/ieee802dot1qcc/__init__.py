@@ -22,7 +22,7 @@ class UNIServer(object):
     def __init__(self):
         self._uni_clients = []  # type: list[UNIClient]
 
-    def cumulative_join(self, *args):
+    def cumulative_join(self, uni_client, *args):
         """
         join any number of talkers or listeners.
         will return the same number of status messages in the correct order.
@@ -32,7 +32,7 @@ class UNIServer(object):
         """
         raise NotImplementedError()
 
-    def cumulative_leave(self, *args):
+    def cumulative_leave(self, uni_client, *args):
         """
         leave any number of talkers or listeners
         will return the same number of status messages in the correct order.
@@ -42,17 +42,17 @@ class UNIServer(object):
         """
         raise NotImplementedError()
 
-    def talker_join(self, talker):
-        return self.cumulative_join(talker)
+    def talker_join(self, uni_client, talker):
+        return self.cumulative_join(uni_client, talker)
 
-    def talker_leave(self, talker):
-        return self.cumulative_leave(talker)
+    def talker_leave(self, uni_client, talker):
+        return self.cumulative_leave(uni_client, talker)
 
-    def listener_join(self, listener):
-        return self.cumulative_join(listener)
+    def listener_join(self, uni_client, listener):
+        return self.cumulative_join(uni_client, listener)
 
-    def listener_leave(self, listener):
-        return self.cumulative_leave(listener)
+    def listener_leave(self, uni_client, listener):
+        return self.cumulative_leave(uni_client, listener)
 
     def start(self, *uni_clients):
         """

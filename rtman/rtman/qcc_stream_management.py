@@ -66,10 +66,19 @@ class QccMatch(BaseMatch):
             raise Exception("invalid frame_spec type: %s" % frame_spec.__class__)
 
 class QccPartialStream(IRTPartialStream):
-    pass
+    __slots__ = ("_associated_listener", )
+
+    def __init__(self, receiver, parent):
+        super(QccPartialStream, self).__init__(receiver, parent)
+
+    def set_associated_listener(self, associated_listener):
+        self._associated_listener = associated_listener
+
 
 class QccMultiStream(IRTMultiStream):
     _partialstream_class = QccPartialStream
+
+    __slots__ = ("_associated_talker", )
 
     def __init__(self, odl_client, talker):
         #fixme: implement multiple interfaces per host. requires changes to odl client
@@ -83,6 +92,7 @@ class QccMultiStream(IRTMultiStream):
             maximum_jitter=0,  # fixme: dummy
             name=talker.name if talker.name else talker.stream_id
         )
+        self._associated_talker = talker
 
     def add_receiver_from_listener(self, odl_client, listener):
         """
@@ -93,7 +103,9 @@ class QccMultiStream(IRTMultiStream):
         """
         #fixme: implement multiple interfaces per host. requires changes to odl client
         receiver = odl_client.get_host_by_mac(next(iter(listener.end_station_interfaces)).mac_address)
-        return self.add_receiver(receiver)
+        partialstream = self.add_receiver(receiver)
+        partialstream.set_associated_listener(listener)
+        return partialstream
 
 class QccStreamManager(object):
     """
