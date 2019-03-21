@@ -248,7 +248,7 @@ class opcua_client:
 
         return self.model
 
-    def write(self):
+    def write(self, isTalker):
         print "read opc ua model"
         client = self.client
 
@@ -257,140 +257,155 @@ class opcua_client:
         # TsnEndpoints
         x = 0
 
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:AccumulatedLatency", "2:AccumulatedLatency"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.AccumulatedLatency.AccumulatedLatency), ua.VariantType.UInt32)
-        )
-        # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:FailedInterfaces"]).set_value(
-        #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.FailedInterfaces
-        # )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:DestinationMacAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802MacAddresses.DestinationMacAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:SourceMacAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802MacAddresses.SourceMacAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:PriorityCodePoint"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802VlanTag.PriorityCodePoint), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:VlanId"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802VlanTag.VlanId), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Dscp"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.Dscp), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Protocol"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.Protocol), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourceIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.SourceIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourcePort"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.SourcePort), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Dscp"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.Dscp), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Protocol"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.Protocol), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourceIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.SourceIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourcePort"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.SourcePort), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:TimeAwareOffset"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.TimeAwareOffset), ua.VariantType.UInt32)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:StatusInfo", "2:FailureCode"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.StatusInfo.FailureCode), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:StatusInfo", "2:ListenerStatus"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.StatusInfo.ListenerStatus), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:StatusInfo", "2:TalkerStatus"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.StatusInfo.TalkerStatus), ua.VariantType.Byte)
-        )
+        if isTalker:
+            root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status",
+                            "2:AccumulatedLatency", "2:AccumulatedLatency"]).set_value(
+                ua.Variant(int(
+                    self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.AccumulatedLatency.AccumulatedLatency),
+                           ua.VariantType.UInt32)
+            )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:FailedInterfaces"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.FailedInterfaces
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:DestinationMacAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802MacAddresses.DestinationMacAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:SourceMacAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802MacAddresses.SourceMacAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:PriorityCodePoint"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802VlanTag.PriorityCodePoint), ua.VariantType.Byte)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:VlanId"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802VlanTag.VlanId), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Dscp"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.Dscp), ua.VariantType.Byte)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Protocol"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.Protocol), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourceIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.SourceIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourcePort"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.SourcePort), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Dscp"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.Dscp), ua.VariantType.Byte)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Protocol"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.Protocol), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourceIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.SourceIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourcePort"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.SourcePort), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:TimeAwareOffset"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.TimeAwareOffset), ua.VariantType.UInt32)
+            # )
+            root.get_child(
+                ["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:StatusInfo",
+                 "2:FailureCode"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.StatusInfo.FailureCode),
+                           ua.VariantType.Byte)
+            )
+            root.get_child(
+                ["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:StatusInfo",
+                 "2:ListenerStatus"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.StatusInfo.ListenerStatus),
+                           ua.VariantType.Byte)
+            )
+            root.get_child(
+                ["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:StatusInfo",
+                 "2:TalkerStatus"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.StatusInfo.TalkerStatus),
+                           ua.VariantType.Byte)
+            )
 
 
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:AccumulatedLatency", "2:AccumulatedLatency"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.AccumulatedLatency.AccumulatedLatency), ua.VariantType.UInt32)
-        )
-        # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:FailedInterfaces"]).set_value(
-        #     self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.FailedInterfaces
-        # )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:DestinationMacAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802MacAddresses.DestinationMacAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:SourceMacAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802MacAddresses.SourceMacAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:PriorityCodePoint"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802VlanTag.PriorityCodePoint), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:VlanId"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.Ieee802VlanTag.VlanId), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Dscp"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.Dscp), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Protocol"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.Protocol), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourceIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.SourceIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourcePort"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV6Tuple.SourcePort), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Dscp"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.Dscp), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Protocol"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.Protocol), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourceIpAddress"]).set_value(
-            self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.SourceIpAddress
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourcePort"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.IpV4Tuple.SourcePort), ua.VariantType.UInt16)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:InterfaceConfiguration", "2:TimeAwareOffset"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.InterfaceConfiguration.TimeAwareOffset), ua.VariantType.UInt32)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:StatusInfo", "2:FailureCode"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.StatusInfo.FailureCode), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:StatusInfo", "2:ListenerStatus"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.StatusInfo.ListenerStatus), ua.VariantType.Byte)
-        )
-        root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Talker" + str(x), "2:Status", "2:StatusInfo", "2:TalkerStatus"]).set_value(
-            ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Talker[x].Status.StatusInfo.TalkerStatus), ua.VariantType.Byte)
-        )
+        else:
+            root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:AccumulatedLatency", "2:AccumulatedLatency"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.AccumulatedLatency.AccumulatedLatency), ua.VariantType.UInt32)
+            )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:FailedInterfaces"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.FailedInterfaces
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:DestinationMacAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802MacAddresses.DestinationMacAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802MacAddresses", "2:SourceMacAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802MacAddresses.SourceMacAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:PriorityCodePoint"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802VlanTag.PriorityCodePoint), ua.VariantType.Byte)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:Ieee802VlanTag", "2:VlanId"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.Ieee802VlanTag.VlanId), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Dscp"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.Dscp), ua.VariantType.Byte)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:Protocol"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.Protocol), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourceIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.SourceIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV6Tuple", "2:SourcePort"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV6Tuple.SourcePort), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:DestinationIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.DestinationIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Dscp"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.Dscp), ua.VariantType.Byte)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:Protocol"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.Protocol), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourceIpAddress"]).set_value(
+            #     self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.SourceIpAddress
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:IpV4Tuple", "2:SourcePort"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.IpV4Tuple.SourcePort), ua.VariantType.UInt16)
+            # )
+            # root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:InterfaceConfiguration", "2:TimeAwareOffset"]).set_value(
+            #     ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.InterfaceConfiguration.TimeAwareOffset), ua.VariantType.UInt32)
+            # )
+            root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:StatusInfo", "2:FailureCode"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.StatusInfo.FailureCode), ua.VariantType.Byte)
+            )
+            root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:StatusInfo", "2:ListenerStatus"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.StatusInfo.ListenerStatus), ua.VariantType.Byte)
+            )
+            root.get_child(["0:Objects", "1:ConnectionSet", "1:TsnEndpointList", "2:Listener" + str(x), "2:Status", "2:StatusInfo", "2:TalkerStatus"]).set_value(
+                ua.Variant(int(self.model.ConnectionSet.TsnEndpointList.Listener[x].Status.StatusInfo.TalkerStatus), ua.VariantType.Byte)
+            )
+
 
 if __name__ == "__main__":
     c = opcua_client(address="opc.tcp://192.168.250.2:4840/freeopcua/server/")
