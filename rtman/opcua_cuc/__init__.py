@@ -65,7 +65,7 @@ class OpcUaCuc(UNIClient):
         return model
 
 
-    def write_model(self, istalker):
+    def write_model(self, isTalker):
         print "writing OPC UA model"
         self.client.connect()
         model = self.client.write(isTalker=isTalker)
@@ -84,6 +84,10 @@ class OpcUaCuc(UNIClient):
         print "generate Talker on IP: " + address
         self.client = opcua_client.opcua_client(address=address)
         self.model = self.read_model()
+
+        if self.model.ConnectionSet.TsnEndpointList.Talker[0].EndStationInterfaces.InterfaceId.MacAddress == "b8:27:eb:55:a7:d4":
+            self.model.ConnectionSet.TsnEndpointList.Talker[0].EndStationInterfaces.InterfaceId.MacAddress = "58:ef:68:b4:26:3e"
+
         talker = Talker_opcua(
             opcua_address=address,
             uni_client=self,
@@ -122,6 +126,9 @@ class OpcUaCuc(UNIClient):
 
         print "generate Listener on IP: " + address
         # self.client = opcua_client.opcua_client(address=address_listener)
+
+        if self.model.ConnectionSet.TsnEndpointList.Listener[0].EndStationInterfaces.InterfaceId.MacAddress == "b8:27:eb:0e:7d:22":
+            self.model.ConnectionSet.TsnEndpointList.Listener[0].EndStationInterfaces.InterfaceId.MacAddress = "58:ef:68:b4:26:4a"
 
         listener = Listener_opcua(
             opcua_address=address,
@@ -228,7 +235,7 @@ class OpcUaCuc(UNIClient):
             print "Talker Stream ID is " + endpoint2[0].stream_id
             print "Listener Stream ID is " + endpoint2[1].stream_id
 
-            self._uni_server.cumulative_join(endpoint1[1], endpoint2[0])
+            self._uni_server.cumulative_join(endpoint1[0], endpoint2[1])
 
             time.sleep(2)
 
