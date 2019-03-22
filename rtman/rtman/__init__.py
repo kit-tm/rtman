@@ -71,13 +71,13 @@ class RTman(UNIServer):
             if isinstance(a, Listener):
                 receiver = self.odl_client.get_host_by_mac(next(iter(a.end_station_interfaces)).mac_address)
                 if receiver is None:
-                    raise EndStationInterfaceNotExisting()
+                    raise EndStationInterfaceNotExisting(a)
                 listeners.append((a, receiver))
             elif isinstance(a, Talker):
 
                 sender = self.odl_client.get_host_by_mac(next(iter(a.end_station_interfaces)).mac_address)
                 if sender is None:
-                    raise EndStationInterfaceNotExisting()
+                    raise EndStationInterfaceNotExisting(a)
                 talkers.append((a, sender))
             else:
                 raise Exception("wrong type: %s" % a.__repr__())
