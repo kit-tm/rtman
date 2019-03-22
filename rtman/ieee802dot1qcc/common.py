@@ -15,7 +15,7 @@ class MacAddress(object):
         self._mac_address = mac_address
 
     def __eq__(self, o):
-        return isinstance(o, self.__class__) and self._mac_address == str(o)
+        return self._mac_address == str(o)
 
     def __ne__(self, o):
         return not self.__eq__(o)
