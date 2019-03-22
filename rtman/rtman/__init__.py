@@ -4,6 +4,7 @@ import traceback
 from threading import Lock
 
 from ieee802dot1qcc import UNIServer, UNIClient
+from ieee802dot1qcc.exception import EndStationInterfaceNotExisting
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.talker import Talker
 from odl_client.base_odlclient.node import SwitchConnector, Host
@@ -63,18 +64,35 @@ class RTman(UNIServer):
         self._odl_client.stop()
 
     def cumulative_join(self, *args):
+
+        talkers = []
+        listeners = []
         for a in args:
             if isinstance(a, Listener):
-                self._qcc_stream_manager.add_listener(a)
+                receiver = self.odl_client.get_host_by_mac(next(iter(a.end_station_interfaces)).mac_address)
+                if receiver is None:
+                    raise EndStationInterfaceNotExisting()
+                listeners.append((a, receiver))
             elif isinstance(a, Talker):
-                self._qcc_stream_manager.add_talker(a)
+
+                sender = self.odl_client.get_host_by_mac(next(iter(a.end_station_interfaces)).mac_address)
+                if sender is None:
+                    raise EndStationInterfaceNotExisting()
+                talkers.append((a, sender))
             else:
                 raise Exception("wrong type: %s" % a.__repr__())
+
+        for talker, sender in talkers:
+            self._qcc_stream_manager.add_talker(talker, sender)
+        for listener, receiver in listeners:
+            self._qcc_stream_manager.add_listener(listener, receiver)
+
         self._odl_client.set_partialstreams(self._qcc_stream_manager.get_partialstreams())
         self._odl_client.update_and_deploy_schedule()
         self._qcc_stream_manager.check_for_status_updates()
 
     def cumulative_leave(self, *args):
+        # no need to check existence of receivers/sensers - we don't need them anyways.
         for a in args:
             if isinstance(a, Listener):
                 self._qcc_stream_manager.remove_listener(a)

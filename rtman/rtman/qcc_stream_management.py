@@ -112,9 +112,8 @@ class QccMultiStream(IRTMultiStream):
         "_listener_status"
     )
 
-    def __init__(self, odl_client, talker):
+    def __init__(self, talker, sender):
         #fixme: implement multiple interfaces per host. requires changes to odl client
-        sender = odl_client.get_host_by_mac(next(iter(talker.end_station_interfaces)).mac_address)
         super(QccMultiStream, self).__init__(
             sender=sender,
             receivers=set(),
@@ -191,7 +190,7 @@ class QccMultiStream(IRTMultiStream):
     def stream_id(self):
         return self._associated_talker.stream_id
 
-    def add_receiver_from_listener(self, odl_client, listener):
+    def add_listener(self, listener, receiver):
         """
 
         :param ODLClient odl_client:
@@ -199,7 +198,6 @@ class QccMultiStream(IRTMultiStream):
         :return:
         """
         #fixme: implement multiple interfaces per host. requires changes to odl client
-        receiver = odl_client.get_host_by_mac(next(iter(listener.end_station_interfaces)).mac_address)
         return self.add_receiver(receiver, listener=listener)
 
 
@@ -234,16 +232,17 @@ class QccStreamManager(object):
         self._listener_associations = {}  # type: dict[str, set[tuple[Listener, QccPartialStream]]]
         self._listeners_waiting = {}  # type: dict[str, set[Listener]]
 
-    def add_talker(self, talker):
+    def add_talker(self, talker, sender):
         """
 
         :param Talker talker:
+        :param CapacityBasedHost sender:
         :return:
         """
         # fixme: check duplicates
         with self._lock:
             stream_id = str(talker.stream_id)
-            multistream = QccMultiStream(self._odl_client, talker)
+            multistream = QccMultiStream(talker, sender)
             self._talker_associations[stream_id] = (talker, multistream)
 
             if self._listeners_waiting.get(stream_id, None):
@@ -264,10 +263,11 @@ class QccStreamManager(object):
             #     associated_talkerlistener=listener
             # )
 
-    def add_listener(self, listener):
+    def add_listener(self, listener, receiver):
         """
 
         :param Listener listener:
+        :param CapacityBasedHost sender:
         :return:
         """
         # fixme: check duplicates
@@ -275,7 +275,7 @@ class QccStreamManager(object):
             stream_id = str(listener.stream_id)
             if stream_id in self._talker_associations:
                 # a talker for the stream is known.
-                partialstream = self._talker_associations[stream_id][1].add_receiver_from_listener(self._odl_client, listener)
+                partialstream = self._talker_associations[stream_id][1].add_listener(listener, receiver)
                 if stream_id in self._listener_associations:
                     self._listener_associations[stream_id].add((listener, partialstream))
                 else:
