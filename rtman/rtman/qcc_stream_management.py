@@ -316,7 +316,7 @@ class QccStreamManager(object):
         :param Talker talker:
         :return:
         """
-        stream_id = str(listener.stream_id)
+        stream_id = str(talker.stream_id)
         with self._lock:
             if stream_id in self._talker_associations:
                 if stream_id in self._listener_associations:
