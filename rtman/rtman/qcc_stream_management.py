@@ -109,7 +109,9 @@ class QccMultiStream(IRTMultiStream):
 
         "_max_latency",
         "_talker_status",
-        "_listener_status"
+        "_listener_status",
+
+        "_status_lock"
     )
 
     def __init__(self, talker, sender):
@@ -123,6 +125,7 @@ class QccMultiStream(IRTMultiStream):
             maximum_jitter=0,  # fixme: dummy
             name=talker.name if talker.name else talker.stream_id
         )
+        self._status_lock = RLock()
         self._associated_talker = talker
         self._talker_status = TalkerStatus.No
         self._listener_status = ListenerStatus.No
@@ -136,34 +139,35 @@ class QccMultiStream(IRTMultiStream):
         return self._listener_status
 
     def set_status(self, status_code):
-        super(QccMultiStream, self).set_status(status_code)
+        with self._status_lock:
+            super(QccMultiStream, self).set_status(status_code)
 
-        # calculate more status information from partial streams
-        new_listener_status = ListenerStatus.No
-        if len(self._partials) > 0:
-            listenersFailed = False
-            listenersReady = False
-            for partialstream in self._partials:
-                if partialstream.status_code == FailureCode.NoFailure:
-                    listenersReady = True
+            # calculate more status information from partial streams
+            new_listener_status = ListenerStatus.No
+            if len(self._partials) > 0:
+                listenersFailed = False
+                listenersReady = False
+                for partialstream in self._partials:
+                    if partialstream.status_code == FailureCode.NoFailure:
+                        listenersReady = True
+                    else:
+                        listenersFailed = True
+                if listenersFailed:
+                    if listenersReady:
+                        new_listener_status = ListenerStatus.PartialFailed
+                    else:
+                        new_listener_status = ListenerStatus.Failed
                 else:
-                    listenersFailed = True
-            if listenersFailed:
-                if listenersReady:
-                    new_listener_status = ListenerStatus.PartialFailed
-                else:
-                    new_listener_status = ListenerStatus.Failed
-            else:
-                assert listenersReady  # since we checked if there is at least a partialstream, we can assume listenersReady.
-                new_listener_status = ListenerStatus.Ready
-        if new_listener_status != self._listener_status:
-            self._status_changed = True
-            self._listener_status = new_listener_status
+                    assert listenersReady  # since we checked if there is at least a partialstream, we can assume listenersReady.
+                    new_listener_status = ListenerStatus.Ready
+            if new_listener_status != self._listener_status:
+                self._status_changed = True
+                self._listener_status = new_listener_status
 
-        new_talker_status = TalkerStatus.Ready if status_code==FailureCode.NoFailure else TalkerStatus.Failed
-        if new_listener_status != self._talker_status:
-            self._status_changed = True
-            self._talker_status = new_talker_status
+            new_talker_status = TalkerStatus.Ready if status_code==FailureCode.NoFailure else TalkerStatus.Failed
+            if new_listener_status != self._talker_status:
+                self._status_changed = True
+                self._talker_status = new_talker_status
 
 
     def update_status(self):
@@ -171,20 +175,21 @@ class QccMultiStream(IRTMultiStream):
         sends a status object update to the uni client if anything has changed
         :return:
         """
-        if self._status_changed:
-            Status(
-                stream_id=self.stream_id,
-                status_info=StatusInfo(
-                    talker_status=self._talker_status,
-                    listener_status=self._listener_status,
-                    failure_code=self._status_code
-                ),
-                accumulated_latency=self._max_latency,
-                interface_configuration=None,  # fixme: implement
-                failed_interfaces=None,  # fixme: implement
-                associated_talkerlistener=self._associated_talker
-            ).notify_uni_client()
-            self._status_changed = False
+        with self._status_lock:
+            if self._status_changed:
+                Status(
+                    stream_id=self.stream_id,
+                    status_info=StatusInfo(
+                        talker_status=self._talker_status,
+                        listener_status=self._listener_status,
+                        failure_code=self._status_code
+                    ),
+                    accumulated_latency=self._max_latency,
+                    interface_configuration=None,  # fixme: implement
+                    failed_interfaces=None,  # fixme: implement
+                    associated_talkerlistener=self._associated_talker
+                ).notify_uni_client()
+                self._status_changed = False
 
     @property
     def stream_id(self):
@@ -198,7 +203,12 @@ class QccMultiStream(IRTMultiStream):
         :return:
         """
         #fixme: implement multiple interfaces per host. requires changes to odl client
-        return self.add_receiver(receiver, listener=listener)
+        with self._status_lock:
+            return self.add_receiver(receiver, listener=listener)
+
+    def remove_partialstream(self, partialstream):
+        with self._status_lock:
+            self._partials.remove(partialstream)
 
 
 class QccStreamManager(object):
@@ -230,7 +240,7 @@ class QccStreamManager(object):
         self._odl_client = odl_client
         self._talker_associations = {}  # type: dict[str, tuple[Talker, QccMultiStream]]
         self._listener_associations = {}  # type: dict[str, set[tuple[Listener, QccPartialStream]]]
-        self._listeners_waiting = {}  # type: dict[str, set[Listener]]
+        self._listeners_waiting = {}  # type: dict[str, set[Tupele[Listener, Host]]]
 
     def add_talker(self, talker, sender):
         """
@@ -246,8 +256,8 @@ class QccStreamManager(object):
             self._talker_associations[stream_id] = (talker, multistream)
 
             if self._listeners_waiting.get(stream_id, None):
-                for l in self._listeners_waiting[stream_id]:
-                    self.add_listener(l)
+                for l, r in self._listeners_waiting[stream_id]:
+                    self.add_listener(l, r)
                 del self._listeners_waiting[stream_id]
             # fixme: we need to return a status object iff we add the talker here without a listener. However, we may add a listener in a second or so...
             # return Status(
@@ -267,7 +277,7 @@ class QccStreamManager(object):
         """
 
         :param Listener listener:
-        :param CapacityBasedHost sender:
+        :param CapacityBasedHost receiver:
         :return:
         """
         # fixme: check duplicates
@@ -283,9 +293,9 @@ class QccStreamManager(object):
             else:
                 # no talker is known!
                 if stream_id in self._listeners_waiting:
-                    self._listeners_waiting[stream_id].add(listener)
+                    self._listeners_waiting[stream_id].add((listener, receiver))
                 else:
-                    self._listeners_waiting[stream_id] = {listener}
+                    self._listeners_waiting[stream_id] = {(listener, receiver)}
                 # fixme: we need to return a status object iff we add the listener here without a talker. However, we may add a talker in a second or so...
                 # return Status(
                 #     stream_id = listener.stream_id,
@@ -306,8 +316,15 @@ class QccStreamManager(object):
         :param Talker talker:
         :return:
         """
-        # fixme: implement
-        raise NotImplementedError()
+        stream_id = str(listener.stream_id)
+        with self._lock:
+            if stream_id in self._talker_associations:
+                if stream_id in self._listener_associations:
+                    self._listeners_waiting[stream_id] = set((listener, partialstream.receiver) for listener, partialstream in self._listener_associations[stream_id])
+                    del self._listener_associations[stream_id]
+                del self._talker_associations[stream_id]
+            else:
+                raise Exception("unknown talker")
 
     def remove_listener(self, listener):
         """
@@ -315,8 +332,29 @@ class QccStreamManager(object):
         :param Listener listener:
         :return:
         """
-        # fixme: implement
-        raise NotImplementedError()
+        with self._lock:
+            stream_id = str(listener.stream_id)
+            if stream_id in self._listeners_waiting:
+                # listener is waiting, no talker associated. Simply remove from waiting list.
+                self._listeners_waiting[stream_id].remove(listener)
+                if not self._listeners_waiting[stream_id]:
+                    del self._listeners_waiting[stream_id]
+            elif stream_id in self._listener_associations:
+                assert stream_id in self._talker_associations
+                # this listener is matched to a talker.
+                # remove from multistream and remove from associations list.
+                partialstream = None
+                listener_association = None
+                for l, pstream in self._listener_associations[stream_id]:
+                    if next(iter(listener.end_station_interfaces)).mac_address == next(iter(l.end_station_interfaces)).mac_address:
+                        partialstream = pstream
+                        listener_association = (l, pstream)
+                        break
+                partialstream.parent.remove_partialstream(partialstream)
+                self._listener_associations[stream_id].remove(listener_association)
+
+            else:
+                raise Exception("unknown listener")
 
     def get_partialstreams(self):
         """
@@ -324,10 +362,11 @@ class QccStreamManager(object):
         :rtype: set[MultiStream]
         :return:
         """
-        result = set()
-        for l in self._listener_associations.values():
-            result.update(partialstream for listener, partialstream in l)
-        return result
+        with self._lock:
+            result = set()
+            for l in self._listener_associations.values():
+                result.update(partialstream for listener, partialstream in l)
+            return result
 
     def check_for_status_updates(self):
         with self._lock:

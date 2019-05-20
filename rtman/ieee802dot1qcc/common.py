@@ -26,6 +26,9 @@ class MacAddress(object):
     def __repr__(self):
         return "StreamID: %s" % self.__str__()
 
+    def __hash__(self):
+        return hash(self.__str__())
+
 
 class StreamID(object):
     """
@@ -81,6 +84,9 @@ class StreamID(object):
 
     def __repr__(self):
         return "StreamID: %s" % self.__str__()
+
+    def __hash__(self):
+        return hash(self.__str__())
 
 
 class InterfaceID(object):
