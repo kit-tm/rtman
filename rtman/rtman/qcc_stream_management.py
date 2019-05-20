@@ -336,7 +336,12 @@ class QccStreamManager(object):
             stream_id = str(listener.stream_id)
             if stream_id in self._listeners_waiting:
                 # listener is waiting, no talker associated. Simply remove from waiting list.
-                self._listeners_waiting[stream_id].remove(listener)
+                torem = None
+                for l, host in self._listeners_waiting[stream_id]:
+                    if next(iter(listener.end_station_interfaces)).mac_address == next(iter(l.end_station_interfaces)).mac_address:
+                        torem = (l, host)
+                        break
+                self._listeners_waiting[stream_id].remove(torem)
                 if not self._listeners_waiting[stream_id]:
                     del self._listeners_waiting[stream_id]
             elif stream_id in self._listener_associations:
