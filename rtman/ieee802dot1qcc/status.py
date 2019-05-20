@@ -1,6 +1,9 @@
 from common import StreamID, InterfaceID
 from enum import Enum
 
+from ieee802dot1qcc.talker import Talker
+
+
 class TalkerStatus(Enum):
     No = 0
     Ready = 1
@@ -57,7 +60,7 @@ class Status(object):
     )
 
     def __str__(self):
-        return "Status: %s -- status %s, latency %d" % (str(self._stream_id), str(self._status_info), self._accumulated_latency)
+        return "Status for %s: %s -- status %s, latency %d" % ("  Talker" if isinstance(self._associated_talkerlistener, Talker) else "Listener", str(self._stream_id), str(self._status_info), self._accumulated_latency)
 
     def __init__(self, stream_id, status_info, accumulated_latency, interface_configuration, failed_interfaces, associated_talkerlistener):
         self._stream_id = stream_id

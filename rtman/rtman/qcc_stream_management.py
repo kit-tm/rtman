@@ -97,6 +97,21 @@ class QccPartialStream(IRTPartialStream):
             ).notify_uni_client()
             self._status_changed = False
 
+    @staticmethod
+    def update_status_notalker(listener):
+        Status(
+            stream_id = listener.stream_id,
+            status_info=StatusInfo(
+                talker_status=TalkerStatus.No,
+                listener_status=ListenerStatus.Failed,
+                failure_code=FailureCode.NoFailure
+            ),
+            accumulated_latency=0,
+            interface_configuration=None,  # fixme: implement
+            failed_interfaces=None,  # fixme: implement
+            associated_talkerlistener=listener
+        ).notify_uni_client()
+
     @property
     def associated_listener(self):
         return self._associated_listener
@@ -127,8 +142,8 @@ class QccMultiStream(IRTMultiStream):
         )
         self._status_lock = RLock()
         self._associated_talker = talker
-        self._talker_status = TalkerStatus.No
-        self._listener_status = ListenerStatus.No
+        self._talker_status = None
+        self._listener_status = None
 
     @property
     def talker_status(self):
@@ -141,6 +156,14 @@ class QccMultiStream(IRTMultiStream):
     def set_status(self, status_code):
         with self._status_lock:
             super(QccMultiStream, self).set_status(status_code)
+
+
+    def update_status(self):
+        """
+        sends a status object update to the uni client if anything has changed
+        :return:
+        """
+        with self._status_lock:
 
             # calculate more status information from partial streams
             new_listener_status = ListenerStatus.No
@@ -164,18 +187,11 @@ class QccMultiStream(IRTMultiStream):
                 self._status_changed = True
                 self._listener_status = new_listener_status
 
-            new_talker_status = TalkerStatus.Ready if status_code==FailureCode.NoFailure else TalkerStatus.Failed
-            if new_listener_status != self._talker_status:
+            new_talker_status = TalkerStatus.Ready if self._status_code == FailureCode.NoFailure else TalkerStatus.Failed
+            if new_talker_status != self._talker_status:
                 self._status_changed = True
                 self._talker_status = new_talker_status
 
-
-    def update_status(self):
-        """
-        sends a status object update to the uni client if anything has changed
-        :return:
-        """
-        with self._status_lock:
             if self._status_changed:
                 Status(
                     stream_id=self.stream_id,
@@ -259,19 +275,7 @@ class QccStreamManager(object):
                 for l, r in self._listeners_waiting[stream_id]:
                     self.add_listener(l, r)
                 del self._listeners_waiting[stream_id]
-            # fixme: we need to return a status object iff we add the talker here without a listener. However, we may add a listener in a second or so...
-            # return Status(
-            #     stream_id = listener.stream_id,
-            #     status_info=StatusInfo(
-            #         talker_status=TalkerStatus.No,
-            #         listener_status=ListenerStatus.Failed,
-            #         failure_code=FailureCode.NoFailure
-            #     ),
-            #     accumulated_latency=0,
-            #     interface_configuration=None,  # fixme: implement
-            #     failed_interfaces=None,  # fixme: implement
-            #     associated_talkerlistener=listener
-            # )
+
 
     def add_listener(self, listener, receiver):
         """
@@ -296,19 +300,7 @@ class QccStreamManager(object):
                     self._listeners_waiting[stream_id].add((listener, receiver))
                 else:
                     self._listeners_waiting[stream_id] = {(listener, receiver)}
-                # fixme: we need to return a status object iff we add the listener here without a talker. However, we may add a talker in a second or so...
-                # return Status(
-                #     stream_id = listener.stream_id,
-                #     status_info=StatusInfo(
-                #         talker_status=TalkerStatus.No,
-                #         listener_status=ListenerStatus.Failed,
-                #         failure_code=FailureCode.NoFailure
-                #     ),
-                #     accumulated_latency=0,
-                #     interface_configuration=None,  # fixme: implement
-                #     failed_interfaces=None,  # fixme: implement
-                #     associated_talkerlistener=listener
-                # )
+                QccPartialStream.update_status_notalker(listener)
 
     def remove_talker(self, talker):
         """
@@ -322,6 +314,9 @@ class QccStreamManager(object):
                 if stream_id in self._listener_associations:
                     self._listeners_waiting[stream_id] = set((listener, partialstream.receiver) for listener, partialstream in self._listener_associations[stream_id])
                     del self._listener_associations[stream_id]
+                    # send status updates for all affected listeners
+                    for listener, _ in self._listeners_waiting[stream_id]:
+                        QccPartialStream.update_status_notalker(listener)
                 del self._talker_associations[stream_id]
             else:
                 raise Exception("unknown talker")

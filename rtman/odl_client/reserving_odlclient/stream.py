@@ -157,7 +157,7 @@ class MultiStream(object):
     def partials(self):
         """
         :return: all partial streams of the multicast stream
-        :rtype: PartialStream
+        :rtype: Set[PartialStream]
         """
         return set(self._partials)
 
