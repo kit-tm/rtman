@@ -14,6 +14,7 @@
     "odl_host": "192.168.33.1",
     "___odl_host": "localhost",
     "odl_port": 6633,
+    "mininet_vm_name": "Mininet-VM",
     "mininet_host": "mininet-vm",
     "___mininet_host": "localhost"
   },
