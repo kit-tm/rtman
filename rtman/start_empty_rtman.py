@@ -7,14 +7,14 @@ configure a few settings here:
 # how to connect to ODL
 import logging
 
-ODL_HOSTNAME = "localhost"
+ODL_HOSTNAME = "opendaylight"
 ODL_PORT = 8181
 
 # behavior on exit
 AUTO_CLEAN_STREAMS = True
 
 # where to open web interface
-WEB_HOSTNAME = "localhost"
+WEB_HOSTNAME = "0.0.0.0"
 WEB_PORT = 8080
 
 

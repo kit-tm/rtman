@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker-compose run --rm $@ rtman
+docker-compose run --service-ports --rm $@ rtman
