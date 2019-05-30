@@ -1,0 +1,20 @@
+version: "3.7"
+services:
+  opendaylight:
+    container_name: "rtman_odl"
+    build: "../controller"
+    image: "rtman/opendaylight"
+    ports:
+      - "6633:6633/tcp"
+      - "6633:6633/udp"
+      - "8181:8181/tcp"
+  rtman:
+    container_name: "rtman_rtman"
+    build: "../rtman"
+    image: "rtman/rtman"
+    ports:
+      - "8080:8080/tcp"
+    volumes:
+      - "..:/rtman"
+    links:
+      - "opendaylight:odl-host"
