@@ -14,6 +14,7 @@ from threading import Thread, Event, Lock
 
 from topology import DescriptionTopo
 from interactive_console import get_console
+import jsonutils
 
 ENDPOINTS_SHOW_POSITIVE = True
 ENDPOINTS_LOSSY = False
@@ -241,6 +242,6 @@ def run_experiment(topo, controller_ip, controller_port):
 if __name__ == "__main__":
     # read config, generate topology and run experiment.
     with open(sys.argv[1], "r") as f:
-        data = json.loads(f.read())
+        data = jsonutils.json_load_byteified(f)
     topo = DescriptionTopo(data["topology"], data["streams"])
     run_experiment(topo, data["config"]["odl_host"], data["config"]["odl_port"])
