@@ -8,6 +8,8 @@ import shutil
 import sys
 import time
 import traceback
+
+from mininet.log import setLogLevel
 from mininet.net import Mininet
 from mininet.node import RemoteController
 from threading import Thread, Event, Lock
@@ -179,8 +181,7 @@ class EndpointAwareNet(Mininet):
         """
         super(EndpointAwareNet, self).start()
 
-        print "waiting for switches to boot"
-        time.sleep(5)
+        time.sleep(2)
         self.pingAll()
 
         for endpoint in self._endpoints.itervalues():
@@ -216,7 +217,7 @@ def run_experiment(topo, controller_ip, controller_port):
     :param int controller_port: SDN controller TCP port
     :return:
     """
-    net = EndpointAwareNet(topo)
+    net = EndpointAwareNet(topo, waitConnected=True)
     try:
         print "creating topology"
         net.addController("c", controller=RemoteController, ip=controller_ip, port=controller_port)
@@ -240,6 +241,7 @@ def run_experiment(topo, controller_ip, controller_port):
 
 
 if __name__ == "__main__":
+    setLogLevel('info')
     # read config, generate topology and run experiment.
     with open(sys.argv[1], "r") as f:
         data = jsonutils.json_load_byteified(f)
