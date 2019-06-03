@@ -11,7 +11,6 @@ mininet_host=$(echo "import json; print(json.loads(open('${config}').read())['co
 ./setup_vm/start_vm.sh
 
 ssh -t ${mininet_host} sudo mn -c
-scp {start_experiment.py,jsonutils.py,topology.py,endpoint/endpoint.py,../rtman/misc/interactive_console.py} ${mininet_host}:
 scp $config ${mininet_host}:topology.json
-ssh -t ${mininet_host} sudo python start_experiment.py topology.json
+ssh -t ${mininet_host} "cd /rtman/mininet && sudo PYTHONPATH=/rtman/rtman python start_experiment.py ~/topology.json"
 read

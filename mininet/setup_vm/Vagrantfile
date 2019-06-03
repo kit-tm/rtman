@@ -10,6 +10,10 @@ Vagrant.configure("2") do |config|
   # network settings
   config.vm.network "private_network", ip: "192.168.33.3"
 
+  # synced folder settings
+  config.vm.synced_folder "../../", "/rtman", :mount_options => ["ro"]
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
   # provision scripts
   config.vm.provision :shell, path: "provision.sh"
 end
