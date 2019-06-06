@@ -8,12 +8,17 @@ import shutil
 import sys
 import time
 import traceback
+
+from mininet.log import setLogLevel
 from mininet.net import Mininet
-from mininet.node import RemoteController
+from mininet.node import RemoteController, OVSSwitch, Host
+from mininet.util import moveIntf
 from threading import Thread, Event, Lock
+from functools import partial
 
 from topology import DescriptionTopo
 from interactive_console import get_console
+import jsonutils
 
 ENDPOINTS_SHOW_POSITIVE = True
 ENDPOINTS_LOSSY = False
@@ -125,6 +130,15 @@ class Endpoint(object):
                 traceback.print_exc()
 
 
+class OffloadDisabledHost(Host):
+    """
+    Mininet host that disables packet offloading for all of its interfaces
+    """
+
+    def addIntf(self, intf, port=None, moveIntfFn=moveIntf):
+        super(OffloadDisabledHost, self).addIntf(intf, port, moveIntfFn)
+        self.cmd("ethtool --offload %s rx off tx off" % intf.name)
+
 
 class EndpointAwareNet(Mininet):
     """
@@ -140,7 +154,8 @@ class EndpointAwareNet(Mininet):
         :param args:
         :param kwargs:
         """
-        super(EndpointAwareNet, self).__init__(topo, *args, controller=controller, **kwargs)
+        super(EndpointAwareNet, self).__init__(topo, *args, switch=partial(OVSSwitch, datapath='user'),
+                                               host=OffloadDisabledHost, controller=controller, **kwargs)
 
         # generate endpoint configs
         configs = {}  # type: Dict[str, Dict] # host_name -> endpoint config
@@ -178,8 +193,7 @@ class EndpointAwareNet(Mininet):
         """
         super(EndpointAwareNet, self).start()
 
-        print "waiting for switches to boot"
-        time.sleep(5)
+        time.sleep(2)
         self.pingAll()
 
         for endpoint in self._endpoints.itervalues():
@@ -215,7 +229,7 @@ def run_experiment(topo, controller_ip, controller_port):
     :param int controller_port: SDN controller TCP port
     :return:
     """
-    net = EndpointAwareNet(topo)
+    net = EndpointAwareNet(topo, waitConnected=True)
     try:
         print "creating topology"
         net.addController("c", controller=RemoteController, ip=controller_ip, port=controller_port)
@@ -239,8 +253,9 @@ def run_experiment(topo, controller_ip, controller_port):
 
 
 if __name__ == "__main__":
+    setLogLevel('info')
     # read config, generate topology and run experiment.
     with open(sys.argv[1], "r") as f:
-        data = json.loads(f.read())
+        data = jsonutils.json_load_byteified(f)
     topo = DescriptionTopo(data["topology"], data["streams"])
     run_experiment(topo, data["config"]["odl_host"], data["config"]["odl_port"])

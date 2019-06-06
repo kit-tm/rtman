@@ -155,9 +155,6 @@ class Sender(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(("0.0.0.0", source_port))  # fixme: doesn't work. use different source port per stream
         self._is_running = True
-        self.thread = Thread(target=self.loop)
-        self.thread.daemon = True
-        self.thread.start()
         self.framesize = framesize
         self.interarrival_time = interarrival_time
 
@@ -176,6 +173,10 @@ class Sender(object):
             def send_fun(seq_nr):
                 sendto(encaps_data(seq_nr, framesize), target)
             self.send_fun =send_fun
+
+        self.thread = Thread(target=self.loop)
+        self.thread.daemon = True
+        self.thread.start()
 
     def shutdown(self):
         self._is_running = False
