@@ -4,6 +4,7 @@ if [ $1 ]; then
 else
     config=topology.json;
 fi
+set -euo pipefail
 config=$(realpath $config)
 mininet_host=$(echo "import json; print(json.loads(open('${config}').read())['config']['mininet_host'])" | python)
 

@@ -25,6 +25,10 @@ AUTO_ADD_STREAMS = True
 # If true, remove flows from SDN controller on shutdown.
 AUTO_CLEAN_STREAMS = True
 
+# where to open web interface
+WEB_HOSTNAME = "0.0.0.0"
+WEB_PORT = 8080
+
 class MacFix(IRTOdlClient):
     """
     ODLclient which fixes the mac assignment problem in mininet
@@ -191,7 +195,9 @@ if __name__ == "__main__":
 
     rtman = RTman(
         odl_client=odl_client,
-        wireshark_script=wireshark_script
+        wireshark_script=wireshark_script,
+        web_address=WEB_HOSTNAME,
+        web_port=WEB_PORT
     )
 
     if ADD_STREAMS_VIA_UNI:

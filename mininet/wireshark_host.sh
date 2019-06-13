@@ -8,9 +8,7 @@ set -euo pipefail
 config=$(realpath $config)
 mininet_host=$(echo "import json; print(json.loads(open('${config}').read())['config']['mininet_host'])" | python)
 
-./setup_vm/start_vm.sh
+host=$2
+interface=$3
 
-ssh -t ${mininet_host} sudo mn -c
-scp $config ${mininet_host}:topology.json
-ssh -t ${mininet_host} "cd /rtman/mininet && sudo PYTHONPATH=/rtman/rtman python start_experiment.py ~/topology.json"
-read
+wireshark -k -i <(ssh ${mininet_host} sudo mininet/util/m ${host} tcpdump -U -i ${interface} -w -)

@@ -17,7 +17,7 @@ from threading import Thread, Event, Lock
 from functools import partial
 
 from topology import DescriptionTopo
-from interactive_console import get_console
+from misc.interactive_console import get_console
 import jsonutils
 
 ENDPOINTS_SHOW_POSITIVE = True
@@ -66,7 +66,8 @@ class Endpoint(object):
             os.makedirs(self._node_dir)
         with open(os.path.join(self._node_dir, "device.json"), "w") as f:
             f.write(json.dumps(config))
-        shutil.copy("endpoint.py", os.path.join(self._node_dir, "endpoint.py"))
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        shutil.copy(os.path.join(current_dir, "endpoint", "endpoint.py"), os.path.join(self._node_dir, "endpoint.py"))
 
     def start(self):
         """
