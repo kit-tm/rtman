@@ -46,6 +46,9 @@ class IEEE802VlanTag(DataFrameSpecification):
     def vlan_id(self):
         return self._vlan_id
 
+    def vlan_tag(self):
+        return (self._pcp << 13) + self._vlan_id
+
 class UncheckedIPv4Tuple(DataFrameSpecification):
     ANY_SRC_IP = "0.0.0.0"
     ANY_PROTOCOL = 0xffff

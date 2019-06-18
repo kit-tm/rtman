@@ -67,6 +67,8 @@ class BaseMatch(GenericMatch):
 
         "mpls_label": {"ethertype": ETHERTYPE_MPLS},
 
+        "vlan-id": {"vlan-id-present": True},
+
         "ethertype": {},
         "mac_destination_address": {},
         "mac_source_address": {},
@@ -119,6 +121,10 @@ class BaseMatch(GenericMatch):
         "ipv6_source": ("ipv6-source",),
 
         "mpls_label": ("protocol-match-fields", "mpls-label"),
+
+        "vlan-id": ("vlan-match", "vlan-id", "vlan-id"),
+        "vlan-id-present": ("vlan-match", "vlan-id", "vlan-id-present"),
+        "vlan-pcp": ("vlan-match", "vlan-pcp"),
 
         "ethertype": ("ethernet-match" ,"ethernet-type", "type"),
         "mac_destination_address": ("ethernet-match", "ethernet-destination", "address"),

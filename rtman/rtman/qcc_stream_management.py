@@ -26,10 +26,13 @@ class QccMatch(BaseMatch):
             if frame_spec.destination_mac_address is not None and frame_spec.destination_mac_address != IEEE802MacAddresses.ANY_MAC_ADR:
                 fields["mac_destination_address"] = frame_spec.destination_mac_address
 
-            return BaseMatch(**fields)
+            return cls(**fields)
 
         elif isinstance(frame_spec, IEEE802VlanTag):
-            raise NotImplementedError()  # fixme
+            return cls(**{
+                "vlan-id": frame_spec.vlan_id,
+                "vlan-pcp": frame_spec.priority_code_point
+            })
 
         elif isinstance(frame_spec, IPv4Tuple) or isinstance(frame_spec, UncheckedIPv4Tuple):
             fields = {}
@@ -61,7 +64,7 @@ class QccMatch(BaseMatch):
             if frame_spec.dscp is not None and frame_spec.dscp != IPv4Tuple.NO_DSCP:
                 fields["ip_dscp"] = frame_spec.dscp
 
-            return BaseMatch(**fields)
+            return cls(**fields)
 
         else:
             raise Exception("invalid frame_spec type: %s" % frame_spec.__class__)
