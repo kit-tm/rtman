@@ -1,3 +1,4 @@
+import fractions
 import logging
 from threading import Lock, Event, Thread
 from time import sleep
@@ -86,8 +87,10 @@ class TrustNode_Connector_TASconfig(object):
     def odl_json(self, timeslot_lengths_nanoseconds):
 
         admin_control_list = []
+        cycle_time_ns = 1000 * timeslot_lengths_nanoseconds
         if len(self._states) > 1:
             slots = sorted(self._states.keys()) + [self._timeslots_in_cycle]
+            cycle_time_ns = slots[len(slots) - 1] * timeslot_lengths_nanoseconds
             for i in range(len(slots)-1):
                 admin_control_list.append({
                     "index": i,
@@ -98,15 +101,18 @@ class TrustNode_Connector_TASconfig(object):
                     }
                 })
 
+        cycle_time_ns_to_s = 1000000000
+        cycle_time_gcd = fractions.gcd(cycle_time_ns_to_s, cycle_time_ns)
+
         result = {
             "ieee802-dot1q-bridge:bridge-port": {
                 "ieee802-dot1q-sched:gate-parameters": {
                     "admin-cycle-time-extension": 0,
                     "admin-cycle-time": {
-                      "denominator": 0,
-                      "numerator": 0
+                      "denominator": cycle_time_ns_to_s / cycle_time_gcd,
+                      "numerator": cycle_time_ns / cycle_time_gcd
                     },
-                    "gate-enabled": False,
+                    "gate-enabled": True,
                     "admin-base-time": {
                       "seconds": 0,
                       "fractional-seconds": 0
