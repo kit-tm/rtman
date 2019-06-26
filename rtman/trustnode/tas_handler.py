@@ -88,7 +88,8 @@ class TrustNode_Connector_TASconfig(object):
 
         admin_control_list = []
         cycle_time_ns = 1000 * timeslot_lengths_nanoseconds
-        if len(self._states) > 1 and not reset:
+        reset = reset or len(self._states) <= 1
+        if not reset:
             slots = sorted(self._states.keys()) + [self._timeslots_in_cycle]
             cycle_time_ns = slots[len(slots) - 1] * timeslot_lengths_nanoseconds
             for i in range(len(slots)-1):
