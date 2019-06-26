@@ -65,7 +65,7 @@ class TASHandler(object):
 
                 )
 
-    def deploy_tas_entries(self, tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds):
+    def deploy_tas_entries(self, tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds, reset=False):
         logging.warning("not deploying TAS because it's unsupported in this network.")
 
     def start(self, odl_client):

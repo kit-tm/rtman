@@ -84,11 +84,11 @@ class TrustNode_Connector_TASconfig(object):
     def states(self):
         return self._states
 
-    def odl_json(self, timeslot_lengths_nanoseconds):
+    def odl_json(self, timeslot_lengths_nanoseconds, reset):
 
         admin_control_list = []
         cycle_time_ns = 1000 * timeslot_lengths_nanoseconds
-        if len(self._states) > 1:
+        if len(self._states) > 1 and not reset:
             slots = sorted(self._states.keys()) + [self._timeslots_in_cycle]
             cycle_time_ns = slots[len(slots) - 1] * timeslot_lengths_nanoseconds
             for i in range(len(slots)-1):
@@ -109,10 +109,10 @@ class TrustNode_Connector_TASconfig(object):
                 "ieee802-dot1q-sched:gate-parameters": {
                     "admin-cycle-time-extension": 0,
                     "admin-cycle-time": {
-                      "denominator": cycle_time_ns_to_s / cycle_time_gcd,
-                      "numerator": cycle_time_ns / cycle_time_gcd
+                      "denominator": (cycle_time_ns_to_s / cycle_time_gcd) if not reset else 0,
+                      "numerator": (cycle_time_ns / cycle_time_gcd) if not reset else 0
                     },
-                    "gate-enabled": True,
+                    "gate-enabled": not reset,
                     "admin-base-time": {
                       "seconds": 0,
                       "fractional-seconds": 0
@@ -210,13 +210,13 @@ class NETCONF_TrustNode_TASHandler(NETCONF_TASHandler):
 
     Node_cls = NETCONF_TrustNode_Node
 
-    def deploy_tas_entries(self, tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds):
+    def deploy_tas_entries(self, tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds, reset=False):
         entries_by_switch = {}
         for switch_id, switch_entries in tas_entries.items():
             entries_by_switch[switch_id] = {}
             for switch_connector_id, switch_connector_entries in switch_entries.items():
                 try:
-                    entries_by_switch[switch_id][switch_connector_id] = TrustNode_Connector_TASconfig(switch_connector_entries.values(), timeslots_in_cycle).odl_json(timeslot_lengths_nanoseconds)
+                    entries_by_switch[switch_id][switch_connector_id] = TrustNode_Connector_TASconfig(switch_connector_entries.values(), timeslots_in_cycle).odl_json(timeslot_lengths_nanoseconds, reset)
                 except UnusedInterfaceException:
                     pass
 
@@ -231,3 +231,9 @@ class NETCONF_TrustNode_TASHandler(NETCONF_TASHandler):
             )
 
         self._last_entries = (tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds)
+
+    def stop(self):
+        logging.debug("resetting TAS configuration")
+        self.deploy_tas_entries(self._odl_client.configuration.tas_entries, self._odl_client.configuration.cycle_length,
+                                self._odl_client.configuration.timeslot_length_nanoseconds, True)
+        super(NETCONF_TrustNode_TASHandler, self).stop()
