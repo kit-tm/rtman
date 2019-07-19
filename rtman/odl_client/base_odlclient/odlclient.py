@@ -3,7 +3,10 @@ import time
 import requests
 import json as json_module
 import traceback
-from threading import Lock
+from threading import Lock, Thread
+
+import websocket
+from requests import auth
 
 from odl_client.base_odlclient.node import Host, Switch, ODLNode
 
@@ -136,6 +139,7 @@ class ODLClient(object):
 
     def start(self):
         self._build_nodes()
+        self.start_topology_changes_listener()
 
     def stop(self):
         pass
@@ -189,14 +193,24 @@ class ODLClient(object):
             self._nodes.update(self._hosts)
 
         #connect
-        for link in topology.get("link", []):
-            source_node = self._nodes[link["source"]["source-node"]]
-            source_connector = source_node.get_connector(link["source"]["source-tp"])
-            dest_node = self._nodes[link["destination"]["dest-node"]]
-            dest_connector = dest_node.get_connector(link["destination"]["dest-tp"])
-            if source_connector.target != dest_connector:
-                source_connector._connect_to(dest_connector)
-                topology_change_detected = True
+        for node in self._nodes.values():
+            for connector in node.list_connectors():
+                found = False
+                for link in topology.get("link", []):
+                    source_node = self._nodes[link["source"]["source-node"]]
+                    source_connector = source_node.get_connector(link["source"]["source-tp"])
+                    dest_node = self._nodes[link["destination"]["dest-node"]]
+                    dest_connector = dest_node.get_connector(link["destination"]["dest-tp"])
+                    if source_node == node and source_connector == connector:
+                        if connector.target != dest_connector:
+                            connector._connect_to(dest_connector)
+                            topology_change_detected = True
+                        found = True
+                        break
+                if not found:
+                    if connector.target is not None:
+                        topology_change_detected = True
+                    connector._connect_to(None, reverse=False)
 
         return topology_change_detected
 
@@ -337,3 +351,36 @@ class ODLClient(object):
     @property
     def flow_namespace(self):
         return self._flow_namespace
+
+    def start_topology_changes_listener(self):
+        payload = {"input": {"path": "/network-topology:network-topology",
+                             "sal-remote-augment:datastore": "OPERATIONAL",
+                             "sal-remote-augment:scope": "BASE"}}
+        sub_result = self._request_json("operations/sal-remote:create-data-change-event-subscription", method="POST",
+                                        json=payload)
+        stream_name = sub_result["output"]["stream-name"]
+        ws_result = self._request_json("streams/stream/" + stream_name)
+        ws_location = ws_result["location"]
+
+        def on_message(_ws, _message):
+            self._on_topology_change()
+
+        def on_close(_ws):
+            logging.debug("Lost WebSocket connection for topology changes")
+
+        def on_open(_ws):
+            logging.debug("Opened Websocket connection for topology changes")
+
+        ws = websocket.WebSocketApp(ws_location,
+                                    header=["Authorization: " + auth._basic_auth_str(self.username, self.password)],
+                                    on_message=on_message,
+                                    on_open=on_open,
+                                    on_close=on_close)
+
+        t = Thread(target=ws.run_forever, name="TopoChangeListener")
+        t.daemon = True
+        t.start()
+
+    def _on_topology_change(self):
+        logging.info("Received topology change notification, updating nodes")
+        self._build_nodes()
