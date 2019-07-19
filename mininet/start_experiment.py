@@ -11,10 +11,8 @@ import traceback
 
 from mininet.log import setLogLevel
 from mininet.net import Mininet
-from mininet.node import RemoteController, OVSSwitch, Host
-from mininet.util import moveIntf
+from mininet.node import RemoteController
 from threading import Thread, Event, Lock
-from functools import partial
 
 from topology import DescriptionTopo
 from misc.interactive_console import get_console
@@ -131,15 +129,6 @@ class Endpoint(object):
                 traceback.print_exc()
 
 
-class OffloadDisabledHost(Host):
-    """
-    Mininet host that disables packet offloading for all of its interfaces
-    """
-
-    def addIntf(self, intf, port=None, moveIntfFn=moveIntf):
-        super(OffloadDisabledHost, self).addIntf(intf, port, moveIntfFn)
-        self.cmd("ethtool --offload %s rx off tx off" % intf.name)
-
 
 class EndpointAwareNet(Mininet):
     """
@@ -155,8 +144,7 @@ class EndpointAwareNet(Mininet):
         :param args:
         :param kwargs:
         """
-        super(EndpointAwareNet, self).__init__(topo, *args, switch=partial(OVSSwitch, datapath='user'),
-                                               host=OffloadDisabledHost, controller=controller, **kwargs)
+        super(EndpointAwareNet, self).__init__(topo, *args, controller=controller, **kwargs)
 
         # generate endpoint configs
         configs = {}  # type: Dict[str, Dict] # host_name -> endpoint config
