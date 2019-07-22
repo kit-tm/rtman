@@ -8,6 +8,7 @@ services:
       - "6633:6633/tcp"
       - "6633:6633/udp"
       - "8181:8181/tcp"
+      - "8185:8185/tcp"
   rtman:
     container_name: "rtman_rtman"
     build: "../rtman"

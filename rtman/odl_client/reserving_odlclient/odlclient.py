@@ -241,3 +241,7 @@ class ReservingODLClient(ODLClient):
         :rtype: set[MultiStream]
         """
         return set(s.parent for s in self._partial_streams)
+
+    def _on_topology_change(self):
+        super(ReservingODLClient, self)._on_topology_change()
+        self.update_and_deploy_schedule()
