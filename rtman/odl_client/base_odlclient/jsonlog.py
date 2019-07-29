@@ -13,14 +13,16 @@ LOG_WAIT_BEFORE_SAVE = 7.0
 
 
 class ODLJSONLogger(object):
-    __slots__ = ("_log_entries", "_storing_lock", "_storing_thread", "_filename", "_stop_event")
+    __slots__ = ("_log_entries", "_storing_lock", "_storing_thread", "_filename", "_stop_event", "_data_changed")
 
     def __init__(self):
         self._log_entries = []
         self._storing_lock = Lock()
-        self._storing_thread = None
         self._filename = "odl_log_" + datetime.datetime.now().replace(microsecond=0).isoformat() + ".json"
         self._stop_event = Event()
+        self._data_changed = False
+        self._storing_thread = Thread(target=self._save_log)
+        self._storing_thread.start()
 
     def log_request(self, r, request_ts, request_json_data=None):
         """
@@ -63,7 +65,9 @@ class ODLJSONLogger(object):
                          "body": response_body_dict}
         log_entry = {"request": request_dict, "response": response_dict}
         self._log_entries.append(log_entry)
-        self._save_log()
+        # making sure we don't miss any data while saving
+        with self._storing_lock:
+            self._data_changed = True
 
     def stop(self):
         self._stop_event.set()
@@ -71,18 +75,17 @@ class ODLJSONLogger(object):
     def _current_time_millis(self):
         return self._time_to_millis(time.time())
 
+    def _save_log(self):
+        while True:
+            stop = self._stop_event.wait(LOG_WAIT_BEFORE_SAVE)
+            with self._storing_lock:
+                if self._data_changed:
+                    with open(self._filename, 'w') as f:
+                        json.dump(self._log_entries, f, sort_keys=True, indent=2)
+                    self._data_changed = False
+            if stop:
+                return
+
     @staticmethod
     def _time_to_millis(t):
         return int(round(t * 1000))
-
-    def _save_log(self):
-        self._storing_lock.acquire()
-        if self._storing_thread is None or not self._storing_thread.isAlive():
-            self._storing_thread = Thread(target=self._thread_save_log)
-            self._storing_thread.start()
-        self._storing_lock.release()
-
-    def _thread_save_log(self):
-        self._stop_event.wait(LOG_WAIT_BEFORE_SAVE)
-        with open(self._filename, 'w') as f:
-            json.dump(self._log_entries, f, sort_keys=True, indent=4)
