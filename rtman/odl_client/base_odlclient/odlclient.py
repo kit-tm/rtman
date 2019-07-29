@@ -8,6 +8,7 @@ from threading import Lock, Thread
 import websocket
 from requests import auth
 
+from odl_client.base_odlclient.jsonlog import ODLJSONLogger
 from odl_client.base_odlclient.node import Host, Switch, ODLNode
 
 class APIException(Exception):
@@ -48,7 +49,9 @@ class ODLClient(object):
 
                  "_nodes",  # type: dict[str, ODLNode]
 
-                 "_flows", "_flow_namespace", "_flow_lock"
+                 "_flows", "_flow_namespace", "_flow_lock",
+
+                 "_json_log"
                  )
 
     _host_type = Host
@@ -73,6 +76,7 @@ class ODLClient(object):
         self._flows = set()
         self._flow_namespace = flow_namespace
         self._flow_lock = Lock()
+        self._json_log = ODLJSONLogger()
 
     def convert_mac_address(self, address):
         """
@@ -93,7 +97,9 @@ class ODLClient(object):
         if path.startswith("/"):
             path = path[1:]
 
+        request_ts = time.time()
         r = requests.request(method=method, url=self.baseurl+path, auth=(self.username, self.password), data=data)
+        self._json_log.log_request(r, request_ts)
         if r.status_code not in range(200,300):
             print(r.status_code)
             print(data)
@@ -111,7 +117,9 @@ class ODLClient(object):
         if path.startswith("/"):
             path = path[1:]
 
+        request_ts = time.time()
         r = requests.request(method=method, url=self.baseurl+path, auth=(self.username, self.password), json=json)
+        self._json_log.log_request(r, request_ts, json)
         if r.status_code not in range(200, 300):
             logging.debug("data: " + str(json))
             exc = json_module.loads(r.text)
@@ -142,7 +150,7 @@ class ODLClient(object):
         self.start_topology_changes_listener()
 
     def stop(self):
-        pass
+        self._json_log.stop()
 
     def get_host_by_mac(self, mac_address):
         """
