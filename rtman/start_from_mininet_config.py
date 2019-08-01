@@ -1,9 +1,32 @@
+# set console logging log level
+import logging
+logging.basicConfig(level=logging.INFO)
+
+# If true, automatically add streams.
+AUTO_ADD_STREAMS = True
+
+# If true, remove flows from SDN controller on shutdown.
+AUTO_CLEAN_STREAMS = True
+
+# where to open web interface
+WEB_HOSTNAME = "0.0.0.0"
+WEB_PORT = 8080
+
+# where to store request log (None disables logging)
 import datetime
 import os
+REQUEST_LOG_FILE = os.path.join("/tmp", "odl_log_%s.json" % str(datetime.datetime.now().replace(microsecond=0).isoformat()))
+
+
+######################################################
+#
+#     Actual Script
+#
+######################################################
+
 import sys
 import json
 import traceback
-import logging
 
 from ieee802dot1qcc.common import StreamID, InterfaceID, UserToNetworkRequirements, InterfaceCapabilities
 from ieee802dot1qcc.trafficspec import TSpecTimeAware, TRANSMISSION_SELECTION_STRICT_PRIORITY
@@ -19,26 +42,6 @@ from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.dataframespec import IPv4Tuple, PROTOCOL_UDP
-
-# set console logging log level
-logging.basicConfig(level=logging.INFO)
-
-# False: you will have access to PartialStream/MultiStream objects and manage those directly withing RTman - work below CNC only.
-# True: you will have access to Talker/Listener objects and can add/remove streams via the UNI - work from outside the CNC
-ADD_STREAMS_VIA_UNI = True
-
-# If true, automatically add streams. Uses UNI or not depending on ADD_STREAMS_VIA_UNI settings.
-AUTO_ADD_STREAMS = True
-
-# If true, remove flows from SDN controller on shutdown.
-AUTO_CLEAN_STREAMS = True
-
-# where to open web interface
-WEB_HOSTNAME = "0.0.0.0"
-WEB_PORT = 8080
-
-# where to store request log (None disables logging)
-REQUEST_LOG_FILE = os.path.join("/tmp", "odl_log_%s.json" % str(datetime.datetime.now().replace(microsecond=0).isoformat()))
 
 class MacFix(IRTOdlClient):
     """
@@ -213,83 +216,20 @@ if __name__ == "__main__":
         web_port=WEB_PORT
     )
 
-    if ADD_STREAMS_VIA_UNI:
-        uni_client = MininetStreamRegisterer(rtman, config["streams"], config["topology"]["hosts"])
+    uni_client = MininetStreamRegisterer(rtman, config["streams"], config["topology"]["hosts"])
 
-        try:
-            rtman.start(uni_client)
-        except:
-            traceback.print_exc()
+    try:
+        rtman.start(uni_client)
+    except:
+        traceback.print_exc()
 
-        try:
-            rtman.get_shell(additional_vars={
-                "mininet_autoadd_uni_client": uni_client,
-                "talkers": uni_client.talkers,
-                "listeners": uni_client.listeners
-            })
-        except:
-            traceback.print_exc()
-        finally:
-            rtman.stop(cleanup=AUTO_CLEAN_STREAMS)
-
-
-    else:  # deprecated - remove from here on when the UNI method has been verified. also, remove if and the ADD_STREAMS_VIA_UNI variable.
-        # translate to odl_client data model
-
-        def host_name_to_host(hostname_str):
-            """
-            let's say the topology.json has a host entry like:
-
-              "topology": {
-                "hosts": {
-                  "h1": "12:23:34:45:56:67",
-
-            and you want to get RTman's ODLClient's host object corresponding with h1, but all you have is the string "h1",
-            then this function is the solution for you!
-
-            :param str hostname_str: hostname in mininet
-            :return: Host Object for ODLClient
-            :rtype: Host
-            """
-            return odl_client.get_host_by_mac(
-                    config["topology"]["hosts"][
-                        hostname_str
-                    ]
-            )
-
-        multistreams = {
-            stream_desc["name"]: IRTMultiStream(
-                sender=host_name_to_host(stream_desc["sender"]),
-                receivers=[host_name_to_host(r) for r in stream_desc["receivers"]],
-                udp_dest_port=stream_desc["port"],
-                name=stream_desc.get("name", None),
-                transmission_schedule=RegularTransmissionSchedule(
-                    frame_size=stream_desc["traffic"]["framesize"],
-                    interarrival_time=stream_desc["traffic"]["time_interarrival"],
-                    offset=stream_desc["traffic"]["time_offset"]
-                )
-            ) for stream_desc in config["streams"]
-        }
-        if multistreams:
-            partialstreams = set.union(*(m.partials for m in multistreams.values()))
-        else:
-            partialstreams = set()
-
-        try:
-            rtman.start()
-            print("Deploying flows")
-            for partialstream in partialstreams:
-                rtman.odl_client.add_partialstream(partialstream)
-            rtman.odl_client.update_and_deploy_schedule()
-        except:
-            traceback.print_exc()
-
-        try:
-            rtman.get_shell(additional_vars={
-                "multistreams": multistreams,
-                "partialstreams": partialstreams
-            })
-        except:
-            traceback.print_exc()
-        finally:
-            rtman.stop(cleanup=AUTO_CLEAN_STREAMS)
+    try:
+        rtman.get_shell(additional_vars={
+            "mininet_autoadd_uni_client": uni_client,
+            "talkers": uni_client.talkers,
+            "listeners": uni_client.listeners
+        })
+    except:
+        traceback.print_exc()
+    finally:
+        rtman.stop(cleanup=AUTO_CLEAN_STREAMS)

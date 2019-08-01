@@ -5,8 +5,6 @@ configure a few settings here:
 """
 
 # how to connect to ODL
-import logging
-
 ODL_HOSTNAME = "opendaylight"
 ODL_PORT = 8181
 
@@ -26,6 +24,7 @@ WEB_PORT = 8080
 
 
 import traceback
+import logging
 
 from rtman import RTman
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
