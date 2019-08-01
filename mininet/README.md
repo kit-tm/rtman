@@ -23,9 +23,7 @@ and to use a huge number of hosts and/or switches to test the scalability of RTm
 Mininet Machine Setup
 ---------------------
 
-You need a virtual machine with mininet installed. For Wireshark access, also install tcpdump.
-
-The VM can be configured as config/mininet_host in the network configuration.
+`setup_vm` contains instructions to set up a virtual machine using vagrant.
 
 Local Setup
 -----------
