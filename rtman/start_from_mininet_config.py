@@ -1,19 +1,27 @@
+import datetime
+import os
 import sys
 import json
 import traceback
+import logging
 
 from ieee802dot1qcc.common import StreamID, InterfaceID, UserToNetworkRequirements, InterfaceCapabilities
 from ieee802dot1qcc.trafficspec import TSpecTimeAware, TRANSMISSION_SELECTION_STRICT_PRIORITY
+from odl_client.base_odlclient.requestlog import JSONLogger
 from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
 from odl_client.irt_odlclient.stream import IRTMultiStream, RegularTransmissionSchedule
 from odl_client.base_odlclient.node import Host
+from trustnode.tas_handler import NETCONF_TrustNode_TASHandler_Simulation
 from rtman import RTman
 
 from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.dataframespec import IPv4Tuple, PROTOCOL_UDP
+
+# set console logging log level
+logging.basicConfig(level=logging.INFO)
 
 # False: you will have access to PartialStream/MultiStream objects and manage those directly withing RTman - work below CNC only.
 # True: you will have access to Talker/Listener objects and can add/remove streams via the UNI - work from outside the CNC
@@ -28,6 +36,9 @@ AUTO_CLEAN_STREAMS = True
 # where to open web interface
 WEB_HOSTNAME = "0.0.0.0"
 WEB_PORT = 8080
+
+# where to store request log (None disables logging)
+REQUEST_LOG_FILE = os.path.join("/tmp", "odl_log_%s.json" % str(datetime.datetime.now().replace(microsecond=0).isoformat()))
 
 class MacFix(IRTOdlClient):
     """
@@ -190,7 +201,9 @@ if __name__ == "__main__":
         scheduler_cls=DijkstraBasedScheduler,
         mac_addresses=config["topology"]["hosts"].values(),
         hostname=config["config"]["odl_host"],
-        port=8181
+        port=8181,
+        tas_handler=NETCONF_TrustNode_TASHandler_Simulation(),
+        request_logger=JSONLogger(REQUEST_LOG_FILE) if REQUEST_LOG_FILE else None
     )
 
     rtman = RTman(

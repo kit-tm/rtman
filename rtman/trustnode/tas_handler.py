@@ -1,7 +1,10 @@
 import fractions
 import logging
+import time
 from threading import Lock, Event, Thread
 from time import sleep
+from odl_client.base_odlclient.requestlog import LogEntry, RequestLogEntry
+
 
 import numpy
 
@@ -129,20 +132,46 @@ class TrustNode_Connector_TASconfig(object):
 
         return result
 
-
-class NETCONF_TrustNode_Node(NETCONF_Node):
-
-    __slots__ = ("_ready", "_path_on_odl", "_path_to_tas_config_on_odl")
+class NETCONF_TrustNode_Node_Simulation(NETCONF_Node):
+    __slots__ = ("_path_on_odl", "_path_to_tas_config_on_odl")
 
     def __init__(self, tas_handler, node_id):
-        super(NETCONF_TrustNode_Node, self).__init__(tas_handler, node_id)
+        super(NETCONF_TrustNode_Node_Simulation, self).__init__(tas_handler, node_id)
         self._ip_address = self._odl_client._switches[node_id].ip_address
         self._port = 830
         self._username = "root"
         self._password = "innoroot"
-        self._ready = Event()
         self._path_on_odl = "config/network-topology:network-topology/topology/topology-netconf/node/%s" % self._node_id
         self._path_to_tas_config_on_odl = "%s/yang-ext:mount/ietf-interfaces:interfaces/" % self._path_on_odl
+
+    @property
+    def path_on_odl(self):
+        return self._path_on_odl
+
+    @property
+    def path_to_tas_config_on_odl(self):
+        return self._path_to_tas_config_on_odl
+
+    def get_config(self, config):
+        pass
+
+    def deploy_config(self, config):
+        pass
+
+    def mount_on_odl(self):
+        logging.warn("simulating trustnode tas_handler for %s; not mounting" % self._node_id)
+
+    def umount_on_odl(self):
+        pass
+
+
+class NETCONF_TrustNode_Node(NETCONF_TrustNode_Node_Simulation):
+
+    __slots__ = ("_ready",)
+
+    def __init__(self, tas_handler, node_id):
+        super(NETCONF_TrustNode_Node, self).__init__(tas_handler, node_id)
+        self._ready = Event()
 
     def mount_on_odl(self):
         self._odl_client._request_json(self.path_on_odl, method="PUT", json={
@@ -189,7 +218,7 @@ class NETCONF_TrustNode_Node(NETCONF_Node):
     def path_to_tas_config_on_odl(self):
         if not self._ready.wait(20):
             raise NETCONFError("Trustnode TAS NETCONF not mounted")
-        return self._path_to_tas_config_on_odl
+        return super(NETCONF_TrustNode_Node, self).path_to_tas_config_on_odl
 
     def get_config(self, config):
         pass
@@ -204,12 +233,18 @@ class NETCONF_TrustNode_Node(NETCONF_Node):
 
 
 
-
-
-class NETCONF_TrustNode_TASHandler(NETCONF_TASHandler):
+class NETCONF_TrustNode_TASHandler_Simulation(NETCONF_TASHandler):
     __slots__ = ("_last_entries",)
 
-    Node_cls = NETCONF_TrustNode_Node
+    Node_cls = NETCONF_TrustNode_Node_Simulation
+
+    def request_fn(self, path, json):
+        self._odl_client._request_logger.add_logentry(LogEntry(request=RequestLogEntry(
+            timestamp=time.time(),
+            path=path,
+            body=json,
+            method="PUT"
+        )))
 
     def deploy_tas_entries(self, tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds, reset=False):
         entries_by_switch = {}
@@ -227,11 +262,20 @@ class NETCONF_TrustNode_TASHandler(NETCONF_TASHandler):
                     "interface": connector_entries.values()
                 }
             }
-            self._odl_client._request_json(
-                self._netconf_nodes[switch_id].path_to_tas_config_on_odl, method="PUT", json=request
-            )
+            self.request_fn(path=self._netconf_nodes[switch_id].path_to_tas_config_on_odl, json=request)
 
         self._last_entries = (tas_entries, timeslots_in_cycle, timeslot_lengths_nanoseconds)
+
+
+
+class NETCONF_TrustNode_TASHandler(NETCONF_TrustNode_TASHandler_Simulation):
+
+    Node_cls = NETCONF_TrustNode_Node
+
+    def request_fn(self, path, json):
+        self._odl_client._request_json(
+            path, method="PUT", json=json
+        )
 
     def stop(self):
         logging.debug("resetting TAS configuration")
