@@ -54,7 +54,7 @@ class Status(object):
         "_stream_id",  # type: StreamID
         "_status_info",  # type: StatusInfo
         "_accumulated_latency",  # type: int
-        "_interface_configuration",  # type: unknown. fixme: implement!
+        "_interface_configuration",  # type: InterfaceConfiguration
         "_failed_interfaces",  # type: iterable[InterfaceID]
         "_associated_talkerlistener"  # type: Talker or Listener
     )

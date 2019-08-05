@@ -1,13 +1,14 @@
 from threading import RLock
 
 from ieee802dot1qcc.common import InterfaceID
+from ieee802dot1qcc.interfaceconfig import InterfaceConfiguration
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.status import Status, StatusInfo, TalkerStatus, ListenerStatus, FailureCode
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.dataframespec import IEEE802MacAddresses, IEEE802VlanTag, IPv4Tuple, IPv6Tuple, PROTOCOL_TCP, \
     PROTOCOL_UDP, UncheckedIPv4Tuple
 
-from odl_client.irt_odlclient.stream import IRTMultiStream, IRTPartialStream
+from odl_client.irt_odlclient.stream import IRTMultiStream, IRTPartialStream, RegularTransmissionSchedule
 from odl_client.base_odlclient.openflow.match import BaseMatch
 
 class QccMatch(BaseMatch):
@@ -129,7 +130,10 @@ class QccMultiStream(IRTMultiStream):
         "_talker_status",
         "_listener_status",
 
-        "_status_lock"
+        "_status_lock",
+
+        "_transmission_minimum_offset",
+        "_transmission_maximum_offset"
     )
 
     def __init__(self, talker, sender):
@@ -138,7 +142,11 @@ class QccMultiStream(IRTMultiStream):
             sender=sender,
             receivers=set(),
             flow_match=QccMatch.from_framespec(talker.data_frame_specification),
-            transmission_schedule=None,  # fixme: dummy  - need a better model in IRTMultiStream...
+            transmission_schedule=RegularTransmissionSchedule(
+                frame_size=talker.traffic_specification.max_frame_size,
+                minimum_offset=talker.traffic_specification.earliest_transmit_offset,
+                maximum_offset=talker.traffic_specification.latest_transmit_offset
+            ),
             maximum_latency=0,  # fixme: dummy
             maximum_jitter=0,  # fixme: dummy
             name=talker.name if talker.name else talker.stream_id
@@ -204,7 +212,9 @@ class QccMultiStream(IRTMultiStream):
                         failure_code=self._status_code
                     ),
                     accumulated_latency=self._max_latency,
-                    interface_configuration=None,  # fixme: implement
+                    interface_configuration=InterfaceConfiguration(
+                        timeawareoffset=self.transmission_offset
+                    ),
                     failed_interfaces=None,  # fixme: implement
                     associated_talkerlistener=self._associated_talker
                 ).notify_uni_client()
@@ -228,7 +238,6 @@ class QccMultiStream(IRTMultiStream):
     def remove_partialstream(self, partialstream):
         with self._status_lock:
             self._partials.remove(partialstream)
-
 
 class QccStreamManager(object):
     """

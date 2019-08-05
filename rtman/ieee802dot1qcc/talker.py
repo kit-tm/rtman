@@ -53,6 +53,10 @@ class Talker(object):
 
     @property
     def traffic_specification(self):
+        """
+        :rtype: TrafficSpecification
+        :return:
+        """
         return self._traffic_specification
 
     @property

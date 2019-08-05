@@ -1,5 +1,9 @@
 # set console logging log level
 import logging
+
+from schedulers.dijkstra_earliesttransmission_udptuplematching.scheduler import \
+    EarliestTransmissionUdpRoutingDijkstraScheduler
+
 logging.basicConfig(level=logging.INFO)
 
 # If true, automatically add streams.
@@ -201,7 +205,7 @@ if __name__ == "__main__":
         config = json.loads(f.read())
 
     odl_client = MacFix(
-        scheduler_cls=DijkstraBasedScheduler,
+        scheduler_cls=EarliestTransmissionUdpRoutingDijkstraScheduler,
         mac_addresses=config["topology"]["hosts"].values(),
         hostname=config["config"]["odl_host"],
         port=8181,

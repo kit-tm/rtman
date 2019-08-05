@@ -10,9 +10,9 @@ An IRT stream is a stream with additional properties
 from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
 
 class RegularTransmissionSchedule(object):
-    __slots__ = ("_frame_size", "_interarrival_time", "_offset")
+    __slots__ = ("_frame_size", "_interarrival_time", "_minimum_offset", "_maximum_offset", "_offset")
 
-    def __init__(self, frame_size, interarrival_time, offset):  # fixme: better parameters
+    def __init__(self, frame_size, minimum_offset, maximum_offset):  # fixme: better parameters
         """
 
         :param int frame_size: maximum frame size in bytes
@@ -21,12 +21,17 @@ class RegularTransmissionSchedule(object):
         """
         super(RegularTransmissionSchedule, self).__init__()
         self._frame_size = frame_size
-        self._interarrival_time = interarrival_time
-        self._offset = offset
+        self._minimum_offset = minimum_offset
+        self._maximum_offset = maximum_offset
+        self._offset = None
 
     @property
-    def interarrival_time(self):
-        return self._interarrival_time
+    def minimum_offset(self):
+        return self._minimum_offset
+
+    @property
+    def maximum_offset(self):
+        return self._maximum_offset
 
     @property
     def frame_size(self):
@@ -47,6 +52,10 @@ class RegularTransmissionSchedule(object):
         :return: transmission offset from network tick
         """
         return self._offset
+
+    @offset.setter
+    def offset(self, offset):
+        self._offset = offset
 
 
 class IRTPartialStream(PartialStream):
@@ -83,7 +92,9 @@ class IRTMultiStream(MultiStream):
 
                  "_status_changed",
                  "_max_latency",
-                 "_status_code"  # type: FailureCode
+                 "_status_code",  # type: FailureCode
+
+                 "_transmission_offset"
                  )
 
     _partialstream_class = IRTPartialStream
@@ -108,6 +119,7 @@ class IRTMultiStream(MultiStream):
         self._max_latency = 0
         self._status_code = FailureCode.NoFailure
         self._status_changed = False
+        self._transmission_offset = 0
 
     def set_status(self, status_code):
         """
@@ -145,3 +157,19 @@ class IRTMultiStream(MultiStream):
     @property
     def maximum_jitter(self):
         return self._maximum_jitter
+
+    @property
+    def minimum_transmission_offset(self):
+        return self._transmission_schedule.minimum_offset
+
+    @property
+    def maximum_transmission_offset(self):
+        return self._transmission_schedule.maximum_offset
+
+    @property
+    def transmission_offset(self):
+        return self._transmission_schedule.offset
+
+    @transmission_offset.setter
+    def transmission_offset(self, offset):
+        self._transmission_schedule.offset = offset

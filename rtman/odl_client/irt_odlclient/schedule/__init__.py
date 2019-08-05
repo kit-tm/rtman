@@ -37,7 +37,7 @@ class Schedule(object):
         self._scheduler = scheduler
         self._transmission_points = set()  # type: Set[TransmissionPoint]
         self._cache_invalid = True
-        self._cycle_length = None
+        self._cycle_length = scheduler.cycle_length
 
     @property
     def cycle_length(self):
@@ -281,6 +281,48 @@ class Configuration(object):
     @property
     def cycle_length(self):
         return self._cycle_length
+
+    def visualization(self):
+        tas_entries = self.tas_entries
+        cycle_length = self.cycle_length
+        tas_config = {}
+
+        for node_id, switch in tas_entries.items():
+            switchentry = {}
+            for connector_id, switch_connector in switch.items():
+                switchconnectorentry = {}
+                for queue_id, tas_entry in switch_connector.items():
+
+                    # find slots where the gate is changed
+                    change_slots = {}
+                    for o, c in tas_entry.gate_open_intervals:
+                        transmissionpoints = self._scheduler.schedule.transmission_points_by_switch_connector[
+                            connector_id]
+                        for i in range(o, c):
+                            for t in transmissionpoints:
+                                for interval in t.transmission_times:
+                                    if interval[0] == i:
+                                        change_slots[i] = t.multistream.name
+                        change_slots[c] = None
+
+                    if change_slots:
+
+                        # now, we want to fill the whole cycle:
+                        current_stream = None
+                        queueentry = []
+                        for slot in range(cycle_length):
+                            if slot in change_slots:
+                                current_stream = change_slots[slot]
+                            queueentry.append(current_stream)
+
+                        switchconnectorentry[queue_id] = queueentry
+
+                if switchconnectorentry:
+                    switchentry[connector_id] = switchconnectorentry
+            if switchentry:
+                tas_config[node_id] = switchentry
+
+        return tas_config
 
 
 class Scheduler(object):

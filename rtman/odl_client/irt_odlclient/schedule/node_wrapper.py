@@ -59,6 +59,12 @@ class NodeWrapper(object):
         return self._topology
 
     def get_neighbor_connector(self, neighbor):
+        """
+
+        :param neighbor:
+        :return:
+        :rtype: NodeConnectorWrapper
+        """
         return self._topology.get_node_connector(self._node.get_neighbor_connector(neighbor._node).connector_id)
 
 class NodeConnectorWrapper(object):

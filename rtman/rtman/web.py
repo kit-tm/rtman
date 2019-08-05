@@ -263,7 +263,7 @@ class RTmanWeb(object):
             gravity=-800,  # force that pulls nodes away from each other (yes, this is negative gravity)
             color_switches="#88f",  # color for switch nodes
             color_hosts="#888",  # color for host nodes
-            tas_config=self._tas_config()
+            tas_config=self._rtman.odl_client.configuration.visualization()
         ), None, None
 
     def _graph_topology_json(self):
@@ -271,8 +271,6 @@ class RTmanWeb(object):
 
         :return: all the data needed by graph.html
         """
-
-        tas_config = self._tas_config()
 
         # for nodes, we simply need to know their ids (to reference them in links, and for display) and
         # whether or not they are hosts (if not a host: it's a switch!)
@@ -348,51 +346,10 @@ class RTmanWeb(object):
                     connections[connector.connector_id] = connector.target.parent.node_id
 
         return env.get_template("schedule_visualizer.html").render(
-            tas_config=self._tas_config(),
+            tas_config=self._rtman.odl_client.configuration.visualization(),
             connections=connections,
             streamcolors=stream_colors
         ), None, None
-
-    def _tas_config(self):
-        tas_entries = self._rtman.odl_client.configuration.tas_entries
-        cycle_length = self._rtman.odl_client.configuration.cycle_length
-        tas_config = {}
-
-        for node_id, switch in tas_entries.items():
-            switchentry = {}
-            for connector_id, switch_connector in switch.items():
-                switchconnectorentry = {}
-                for queue_id, tas_entry in switch_connector.items():
-
-                    # find slots where the gate is changed
-                    change_slots = {}
-                    for o, c in tas_entry.gate_open_intervals:
-                        transmissionpoints = self._rtman.odl_client.schedule.transmission_points_by_switch_connector[connector_id]
-                        for i in range(o, c):
-                            for t in transmissionpoints:
-                                for interval in t.transmission_times:
-                                    if interval[0] == i:
-                                        change_slots[i] = t.multistream.name
-                        change_slots[c] = None
-
-                    if change_slots:
-
-                        # now, we want to fill the whole cycle:
-                        current_stream = None
-                        queueentry = []
-                        for slot in range(cycle_length):
-                            if slot in change_slots:
-                                current_stream = change_slots[slot]
-                            queueentry.append(current_stream)
-
-                        switchconnectorentry[queue_id] = queueentry
-
-                if switchconnectorentry:
-                    switchentry[connector_id] = switchconnectorentry
-            if switchentry:
-                tas_config[node_id] = switchentry
-
-        return tas_config
 
 
     def respond_by_urls(self, path, method):
