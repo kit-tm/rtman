@@ -360,7 +360,7 @@ class Switch(ODLNode):
         :return: whether a new or deleted connection has been found
         :rtype: bool
         """
-        topology_change_detected = True
+        topology_change_detected = False
         validconnectorids = []
         for connector in inventory_dict["node-connector"]:
             validconnectorids.append(connector["id"])
