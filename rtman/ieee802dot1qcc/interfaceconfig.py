@@ -33,3 +33,12 @@ class InterfaceConfiguration(object):
     @property
     def timeawareoffset(self):
         return self._timeawareoffset
+
+    def json(self):
+        return {
+            "_ieee802macaddresses": self._ieee802macaddresses.json() if self._ieee802macaddresses else None,
+            "_ieee802vlantag": self._ieee802vlantag.json() if self._ieee802vlantag else None,
+            "_ipv4tuple": self._ipv4tuple.json() if self._ipv4tuple else None,
+            "_ipv6tuple": self._ipv6tuple.json() if self._ipv6tuple else None,
+            "_timeawareoffset": self._timeawareoffset if self._timeawareoffset else None
+        }

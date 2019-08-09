@@ -71,6 +71,18 @@ class Talker(object):
     def name(self):
         return self._name
 
+    def json(self):
+        return {
+            "stream_id": self._stream_id.json(),
+            "stream_rank": self._stream_rank.json(),
+            "end_station_interfaces": [i.json() for i in self._end_station_interfaces],
+            "data_frame_specification": self._data_frame_specification.json(),
+            "traffic_specification": self._traffic_specification.json(),
+            "user_to_network_requirements": self._user_to_network_requirements.json(),
+            "interface_capabilities": self._interface_capabilities.json(),
+            "name": self._name,
+        }
+
 
 class StreamRank(object):
     __slots__ = ("_rank",)
@@ -85,3 +97,6 @@ class StreamRank(object):
     @classmethod
     def MaxPriority(cls):
         return cls(7)
+
+    def json(self):
+        return {"rank": self._rank}

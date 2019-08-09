@@ -1,3 +1,4 @@
+import time
 from threading import RLock
 
 from ieee802dot1qcc.common import InterfaceID
@@ -7,6 +8,7 @@ from ieee802dot1qcc.status import Status, StatusInfo, TalkerStatus, ListenerStat
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.dataframespec import IEEE802MacAddresses, IEEE802VlanTag, IPv4Tuple, IPv6Tuple, PROTOCOL_TCP, \
     PROTOCOL_UDP, UncheckedIPv4Tuple
+from odl_client.base_odlclient.requestlog import UNILogEntry
 
 from odl_client.irt_odlclient.stream import IRTMultiStream, IRTPartialStream, RegularTransmissionSchedule
 from odl_client.base_odlclient.openflow.match import BaseMatch
@@ -72,9 +74,7 @@ class QccMatch(BaseMatch):
 
 class QccPartialStream(IRTPartialStream):
 
-    __slots__ = ("_associated_listener",
-
-                 )
+    __slots__ = ("_associated_listener",)
 
     def __init__(self, receiver, parent, listener):
         super(QccPartialStream, self).__init__(receiver, parent)
@@ -95,15 +95,19 @@ class QccPartialStream(IRTPartialStream):
                     failure_code=self._status_code
                 ),
                 accumulated_latency=self._latency,
-                interface_configuration=None,  # fixme: implement
-                failed_interfaces=None,  # fixme: implement
+                interface_configuration=InterfaceConfiguration(),  # fixme: implement
+                failed_interfaces=[],  # fixme: implement
                 associated_talkerlistener=self._associated_listener
-            ).notify_uni_client()
+            )
+            status.notify_uni_client()
             self._status_changed = False
+            self._associated_listener.uni_client._uni_server.odl_client._request_logger.add_logentry(
+                UNILogEntry(time.time(), status, UNILogEntry.TYPE_STATUS)
+            )
 
     @staticmethod
     def update_status_notalker(listener):
-        Status(
+        status = Status(
             stream_id = listener.stream_id,
             status_info=StatusInfo(
                 talker_status=TalkerStatus.No,
@@ -114,7 +118,11 @@ class QccPartialStream(IRTPartialStream):
             interface_configuration=None,  # fixme: implement
             failed_interfaces=None,  # fixme: implement
             associated_talkerlistener=listener
-        ).notify_uni_client()
+        )
+        status.notify_uni_client()
+        listener.uni_client._uni_server.odl_client._request_logger.add_logentry(
+            UNILogEntry(time.time(), status, UNILogEntry.TYPE_STATUS)
+        )
 
     @property
     def associated_listener(self):
@@ -204,7 +212,7 @@ class QccMultiStream(IRTMultiStream):
                 self._talker_status = new_talker_status
 
             if self._status_changed:
-                Status(
+                status = Status(
                     stream_id=self.stream_id,
                     status_info=StatusInfo(
                         talker_status=self._talker_status,
@@ -217,8 +225,12 @@ class QccMultiStream(IRTMultiStream):
                     ),
                     failed_interfaces=None,  # fixme: implement
                     associated_talkerlistener=self._associated_talker
-                ).notify_uni_client()
+                )
+                status.notify_uni_client()
                 self._status_changed = False
+                self._associated_talker.uni_client._uni_server.odl_client._request_logger.add_logentry(
+                    UNILogEntry(time.time(), status, UNILogEntry.TYPE_STATUS)
+                )
 
     @property
     def stream_id(self):
@@ -288,6 +300,10 @@ class QccStreamManager(object):
                     self.add_listener(l, r)
                 del self._listeners_waiting[stream_id]
 
+        self._odl_client._request_logger.add_logentry(
+            UNILogEntry(time.time(), talker, UNILogEntry.TYPE_ADD)
+        )
+
 
     def add_listener(self, listener, receiver):
         """
@@ -314,6 +330,10 @@ class QccStreamManager(object):
                     self._listeners_waiting[stream_id] = {(listener, receiver)}
                 QccPartialStream.update_status_notalker(listener)
 
+        self._odl_client._request_logger.add_logentry(
+            UNILogEntry(time.time(), listener, UNILogEntry.TYPE_ADD)
+        )
+
     def remove_talker(self, talker):
         """
 
@@ -332,6 +352,10 @@ class QccStreamManager(object):
                 del self._talker_associations[stream_id]
             else:
                 raise Exception("unknown talker")
+
+        self._odl_client._request_logger.add_logentry(
+            UNILogEntry(time.time(), talker, UNILogEntry.TYPE_REMOVE)
+        )
 
     def remove_listener(self, listener):
         """
@@ -367,6 +391,10 @@ class QccStreamManager(object):
 
             else:
                 raise Exception("unknown listener")
+
+        self._odl_client._request_logger.add_logentry(
+            UNILogEntry(time.time(), listener, UNILogEntry.TYPE_REMOVE)
+        )
 
     def get_partialstreams(self):
         """

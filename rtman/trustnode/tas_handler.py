@@ -3,8 +3,7 @@ import logging
 import time
 from threading import Lock, Event, Thread
 from time import sleep
-from odl_client.base_odlclient.requestlog import LogEntry, RequestLogEntry
-
+from odl_client.base_odlclient.requestlog import RequestLogEntry, HTTPLogEntry
 
 import numpy
 
@@ -239,7 +238,7 @@ class NETCONF_TrustNode_TASHandler_Simulation(NETCONF_TASHandler):
     Node_cls = NETCONF_TrustNode_Node_Simulation
 
     def request_fn(self, path, json):
-        self._odl_client._request_logger.add_logentry(LogEntry(request=RequestLogEntry(
+        self._odl_client._request_logger.add_logentry(HTTPLogEntry(request=RequestLogEntry(
             timestamp=time.time(),
             path=path,
             body=json,

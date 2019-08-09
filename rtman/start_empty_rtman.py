@@ -31,7 +31,7 @@ from odl_client.irt_odlclient.odlclient import IRTOdlClient
 from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
 from ieee802dot1qcc import UNIClient
 from odl_client.base_odlclient.node import Host
-from ieee802dot1qcc.talker import Talker
+from ieee802dot1qcc.talker import Talker, StreamRank
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.common import *
 from ieee802dot1qcc.trafficspec import *
@@ -78,7 +78,7 @@ class SimpleUDPAdder(UNIClient):
         talker = Talker(
             self,
             stream_id=stream_id,
-            stream_rank=1,
+            stream_rank=StreamRank(1),
             end_station_interfaces={
                 InterfaceID(next(iter(sender_host.mac_addresses)), sender_host.get_connector().connector_id)
             },

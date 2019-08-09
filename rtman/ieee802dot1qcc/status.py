@@ -97,6 +97,15 @@ class Status(object):
     def failed_interfaces(self):
         return self._failed_interfaces
 
+    def json(self):
+        return {
+            "stream_id": self._stream_id.json(),
+            "status_info": self._status_info.json(),
+            "accumulated_latency": self._accumulated_latency,
+            "interface_configuration": self._interface_configuration.json(),
+            "failed_interfaces": [i.json() for i in self._failed_interfaces] if self._failed_interfaces else None
+        }
+
 
 class StatusInfo(object):
     __slots__ = (
@@ -124,3 +133,10 @@ class StatusInfo(object):
     @property
     def failure_code(self):
         return self._failure_code
+
+    def json(self):
+        return {
+            "talker_status": str(self._talker_status),
+            "listener_status": str(self._listener_status),
+            "failure_code": str(self._failure_code)
+        }

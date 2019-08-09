@@ -35,3 +35,11 @@ class Listener(object):
     @property
     def interface_capabilities(self):
         return self._interface_capabilities
+
+    def json(self):
+        return {
+            "stream_id": self._stream_id.json(),
+            "end_station_interfaces": [(i.json() if i else None) for i in self._end_station_interfaces],
+            "user_to_network_requirements": self._user_to_network_requirements.json(),
+            "interface_capabilities": self._interface_capabilities.json(),
+        }

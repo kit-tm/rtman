@@ -43,7 +43,7 @@ from trustnode.tas_handler import NETCONF_TrustNode_TASHandler_Simulation
 from rtman import RTman
 
 from ieee802dot1qcc import UNIClient
-from ieee802dot1qcc.talker import Talker
+from ieee802dot1qcc.talker import Talker, StreamRank
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.dataframespec import IPv4Tuple, PROTOCOL_UDP
 
@@ -123,7 +123,7 @@ class MininetStreamRegisterer(UNIClient):
             self._talkers[stream_desc["name"]] = Talker(
                 uni_client=self,
                 stream_id=stream_id,
-                stream_rank=1,
+                stream_rank=StreamRank(1),
                 end_station_interfaces={
                     InterfaceID(next(iter(sender.mac_addresses)), sender.get_connector().connector_id)
                 },

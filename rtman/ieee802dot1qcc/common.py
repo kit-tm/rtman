@@ -29,6 +29,9 @@ class MacAddress(object):
     def __hash__(self):
         return hash(self.__str__())
 
+    def json(self):
+        return self._mac_address
+
 
 class StreamID(object):
     """
@@ -73,6 +76,9 @@ class StreamID(object):
     def unique_id(self):
         return self._unique_id
 
+    def json(self):
+        return str(self)
+
     def __eq__(self, o):
         return isinstance(o, self.__class__) and self._mac_address == o.mac_address and self._unique_id == o.unique_id
 
@@ -96,7 +102,10 @@ class InterfaceID(object):
     )
 
     def __init__(self, mac_address, interface_name):
-        self._mac_address = mac_address
+        if isinstance(mac_address, MacAddress):
+            self._mac_address = mac_address
+        else:
+            self._mac_address = MacAddress(mac_address)
         self._interface_name = interface_name
 
     @property
@@ -106,6 +115,12 @@ class InterfaceID(object):
     @property
     def interface_name(self):
         return self._interface_name
+
+    def json(self):
+        return {
+            "mac_address": self._mac_address.json(),
+            "interface_name": self._interface_name
+        }
 
 
 class UserToNetworkRequirements(object):
@@ -125,6 +140,12 @@ class UserToNetworkRequirements(object):
     @property
     def max_latency(self):
         return self._max_latency
+
+    def json(self):
+        return {
+            "num_seamless_trees": self._num_seamless_trees,
+            "max_latency": self._max_latency
+        }
 
 
 class InterfaceCapabilities(object):
@@ -150,3 +171,10 @@ class InterfaceCapabilities(object):
     @property
     def cb_sequence_type_list(self):
         return self._cb_sequence_type_list
+
+    def json(self):
+        return {
+            "vlan_tag_capable": self._vlan_tag_capable,
+            "cb_stream_iden_type_list": self._cb_stream_iden_type_list,
+            "cb_sequence_type_list": self._cb_sequence_type_list
+        }

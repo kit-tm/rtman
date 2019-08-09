@@ -33,6 +33,14 @@ class TrafficSpecification(object):
     def transmission_selection(self):
         return self._transmission_selection
 
+    def json(self):
+        return {
+            "interval": {"numerator": self._interval.numerator, "denominator": self._interval.denominator},
+            "max_frames_per_interval": self._max_frames_per_interval,
+            "max_frame_size": self._max_frame_size,
+            "transmission_selection:": self._transmission_selection
+        }
+
 
 class TSpecTimeAware(TrafficSpecification):
     __slots__ = (
@@ -59,5 +67,14 @@ class TSpecTimeAware(TrafficSpecification):
     @property
     def jitter(self):
         return self._jitter
+
+    def json(self):
+        r = super(TSpecTimeAware, self).json()
+        r.update(**{
+            "earliest_transmit_offset": self._earliest_transmit_offset,
+            "latest_transmit_offset": self._latest_transmit_offset,
+            "jitter": self._jitter
+        })
+
 
 

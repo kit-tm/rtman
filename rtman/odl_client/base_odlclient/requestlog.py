@@ -10,6 +10,9 @@ import time
 from threading import Lock, Thread, Event
 
 # in seconds
+from ieee802dot1qcc.status import Status
+from ieee802dot1qcc.talker import Talker
+
 LOG_WAIT_BEFORE_SAVE = 7.0
 
 class NoLogger(object):
@@ -26,7 +29,55 @@ class NoLogger(object):
         pass
 
 
-class RequestLogEntry(object):
+class LogEntry(object):
+    @property
+    def json(self):
+        return {"type": None}
+
+class UNILogEntry(object):
+    __slots__ = (
+        "timestamp",
+        "talker",
+        "listener",
+        "status",
+        "request_type"
+    )
+
+    TYPE_ADD = "register"
+    TYPE_REMOVE = "remove"
+    TYPE_STATUS = "status"
+
+    def __init__(self, timestamp, uni_object, request_type):
+        super(UNILogEntry, self).__init__()
+        self.timestamp = timestamp
+
+        if isinstance(uni_object, Status):
+            self.status = uni_object
+            uni_object = uni_object.associated_talker_or_listener
+        else:
+            self.status = None
+
+        if isinstance(uni_object, Talker):
+            self.talker = uni_object
+            self.listener = None
+        else:
+            self.listener = uni_object
+            self.talker = None
+
+        self.request_type = request_type
+
+    @property
+    def json(self):
+        return {
+            "type": "uni",
+            "request_type": self.request_type,
+            "talker": self.talker.json() if self.talker else None,
+            "listener": self.listener.json() if self.listener else None,
+            "status": self.status.json() if self.status else None
+        }
+
+
+class RequestLogEntry(LogEntry):
     __slots__ = (
         "timestamp", "path", "url", "method", "headers", "body"
     )
@@ -71,13 +122,13 @@ class ResponseLogEntry(object):
         }
 
 
-class LogEntry(object):
+class HTTPLogEntry(LogEntry):
     __slots__ = (
         "request", "response"
     )
 
     def __init__(self, request, response=None):
-        super(LogEntry, self).__init__()
+        super(HTTPLogEntry, self).__init__()
         self.request = request
         self.response = response
 
@@ -85,7 +136,8 @@ class LogEntry(object):
     def json(self):
         return {
             "request": self.request.json,
-            "response": self.response.json if self.response else {}
+            "response": self.response.json if self.response else {},
+            "type": "request"
         }
 
 
@@ -148,7 +200,7 @@ class JSONLogger(NoLogger):
             body=response_body_dict
         )
 
-        log_entry = LogEntry(request=request_log_entry, response=response_log_entry)
+        log_entry = HTTPLogEntry(request=request_log_entry, response=response_log_entry)
         self.add_logentry(log_entry)
 
     def add_logentry(self, log_entry):

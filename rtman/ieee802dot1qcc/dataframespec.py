@@ -4,6 +4,9 @@ PROTOCOL_TCP = 6
 class DataFrameSpecification(object):
     __slots__ = ()
 
+    def json(self):
+        return None
+
 
 class IEEE802MacAddresses(DataFrameSpecification):
     ANY_MAC_ADR = "ff:ff:ff:ff:ff:ff"
@@ -25,6 +28,12 @@ class IEEE802MacAddresses(DataFrameSpecification):
     @property
     def destination_mac_address(self):
         return self._destination_mac_address
+
+    def json(self):
+        return {
+            "source_mac_address": self._source_mac_address,
+            "destination_mac_address": self._destination_mac_address
+        }
 
 
 class IEEE802VlanTag(DataFrameSpecification):
@@ -48,6 +57,13 @@ class IEEE802VlanTag(DataFrameSpecification):
 
     def vlan_tag(self):
         return (self._pcp << 13) + self._vlan_id
+
+    def json(self):
+        return {
+            "vlan_id": self._vlan_id,
+            "pcp": self._pcp
+        }
+
 
 class UncheckedIPv4Tuple(DataFrameSpecification):
     ANY_SRC_IP = "0.0.0.0"
@@ -95,6 +111,16 @@ class UncheckedIPv4Tuple(DataFrameSpecification):
     @property
     def destination_port(self):
         return self._destination_port
+
+    def json(self):
+        return {
+            "source_ip_address": self._source_ip_address,
+            "destination_ip_address": self._destination_ip_address,
+            "dscp": self._dscp,
+            "protocol": self._protocol,
+            "source_port": self._source_port,
+            "destination_port": self._destination_port
+        }
 
 class IPv4Tuple(UncheckedIPv4Tuple):
     def __init__(self, destination_ip_address, source_ip_address=UncheckedIPv4Tuple.ANY_SRC_IP,
@@ -153,6 +179,16 @@ class IPv6Tuple(DataFrameSpecification):
     @property
     def destination_port(self):
         return self._destination_port
+
+    def json(self):
+        return {
+            "source_ip_address": self._source_ip_address,
+            "destination_ip_address": self._destination_ip_address,
+            "dscp": self._dscp,
+            "protocol": self._protocol,
+            "source_port": self._source_port,
+            "destination_port": self._destination_port
+        }
 
 
 
