@@ -236,7 +236,7 @@ class JSONLogger(NoLogger):
         self.add_logentry(log_entry)
 
     def add_logentry(self, log_entry):
-        self._log_entry_queue.put(log_entry.json)
+        self._log_entry_queue.put(log_entry)
         self._write_event.set()
 
     def stop(self):
@@ -253,7 +253,7 @@ class JSONLogger(NoLogger):
                 self._write_event.wait(LOG_WAIT_BEFORE_SAVE)
                 self._write_event.clear()
                 while not self._log_entry_queue.empty():
-                    entry_json = json.dumps(self._log_entry_queue.get())
+                    entry_json = json.dumps(self._log_entry_queue.get().json)
                     f.write("," + entry_json)
                 f.flush()
             f.write("," + json.dumps(RTmanStopEntry(self._current_time_millis()).json) + "]")
