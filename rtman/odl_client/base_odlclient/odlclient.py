@@ -371,7 +371,8 @@ class ODLClient(object):
         ws_location = ws_result["location"]
 
         def on_message(_ws, _message):
-            self._on_topology_change()
+            if self._build_nodes():
+                self._on_topology_change()
 
         def on_close(_ws):
             logging.debug("Lost WebSocket connection for topology changes")
@@ -391,4 +392,3 @@ class ODLClient(object):
 
     def _on_topology_change(self):
         logging.info("Received topology change notification, updating nodes")
-        self._build_nodes()
