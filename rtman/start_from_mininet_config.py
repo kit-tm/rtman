@@ -1,6 +1,5 @@
 # set console logging log level
 import logging
-import time
 
 from schedulers.dijkstra_earliesttransmission_udptuplematching.scheduler import \
     EarliestTransmissionUdpRoutingDijkstraScheduler
@@ -35,11 +34,8 @@ import traceback
 
 from ieee802dot1qcc.common import StreamID, InterfaceID, UserToNetworkRequirements, InterfaceCapabilities
 from ieee802dot1qcc.trafficspec import TSpecTimeAware, TRANSMISSION_SELECTION_STRICT_PRIORITY
-from odl_client.base_odlclient.requestlog import JSONLogger, UNILogEntry
-from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
+from odl_client.base_odlclient.requestlog import JSONLogger
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
-from odl_client.irt_odlclient.stream import IRTMultiStream, RegularTransmissionSchedule
-from odl_client.base_odlclient.node import Host
 from trustnode.tas_handler import NETCONF_TrustNode_TASHandler_Simulation
 from rtman import RTman
 

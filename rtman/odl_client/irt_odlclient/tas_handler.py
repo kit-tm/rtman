@@ -1,7 +1,6 @@
 import logging
 
-from odl_client.irt_odlclient.schedule.node_wrapper import Queue
-import json
+#  from odl_client.irt_odlclient.odlclient import IRTOdlClient
 
 
 class TASEntry(object):

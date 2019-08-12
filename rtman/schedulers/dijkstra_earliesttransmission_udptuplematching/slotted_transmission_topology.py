@@ -11,7 +11,7 @@ class RemovablePartialstreamsTransmissionPoint(TransmissionPoint):
         new_partialstreams = self._partial_streams.difference(partialstreams)
         if new_partialstreams:
             return self.__class__(
-                switch_connector=self._switch_connectorm,
+                switch_connector=self._switch_connector,
                 partialstreams=new_partialstreams,
                 transmission_times=self._transmission_times
             )

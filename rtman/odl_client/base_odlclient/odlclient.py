@@ -43,11 +43,11 @@ class ODLClient(object):
 
                  "baseurl",
 
-                 "_hosts",  # type: dict[str, Host]
+                 "_hosts",  # type: dict(str, Host)
 
-                 "_switches",  # type: dict[str, Switch]
+                 "_switches",  # type: dict(str, Switch)
 
-                 "_nodes",  # type: dict[str, ODLNode]
+                 "_nodes",  # type: dict(str, ODLNode)
 
                  "_flows", "_flow_namespace", "_flow_lock",
 
@@ -194,7 +194,7 @@ class ODLClient(object):
                         self._switches[node_id] = self._switch_type(self, inventory_dict[node_id])
                         topology_change_detected = True
                 else:
-                    raise Exception["unknown node type: %s" % node_id]
+                    raise Exception("unknown node type: %s" % node_id)
 
             self._nodes = {}
             self._nodes.update(self._switches)

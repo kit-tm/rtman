@@ -1,9 +1,10 @@
+from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.common import StreamID, UserToNetworkRequirements, InterfaceID, InterfaceCapabilities
 
 class Listener(object):
     __slots__ = (
         "_stream_id",  # type: StreamID
-        "_end_station_interfaces",  # type: iterable[InterfaceID]
+        "_end_station_interfaces",  # type: iterable(InterfaceID)
         "_user_to_network_requirements",  # type: UserToNetworkRequirements
         "_interface_capabilities",  # type: InterfaceCapabilities
         "_uni_client"  # type: UNIClient

@@ -1,5 +1,3 @@
-import json
-
 from odl_client.base_odlclient.openflow.base import ODLBaseObject, IPPROTOCOL_UDP, IPPROTOCOL_TCP, ETHERTYPE_IP4, ETHERTYPE_IP6, ETHERTYPE_MPLS
 from misc.dict_tools import merge_dicts
 

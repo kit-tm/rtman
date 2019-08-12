@@ -1,5 +1,4 @@
 from odl_client.base_odlclient.node import Switch, SwitchConnector, Host, HostConnector
-from odl_client.irt_odlclient.stream import IRTPartialStream, IRTMultiStream
 
 MAXIMUM_BANDWIDTH = 1024*1024*1024  # Gigabit
 

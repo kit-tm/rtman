@@ -147,7 +147,7 @@ class EndpointAwareNet(Mininet):
         super(EndpointAwareNet, self).__init__(topo, *args, controller=controller, **kwargs)
 
         # generate endpoint configs
-        configs = {}  # type: Dict[str, Dict] # host_name -> endpoint config
+        configs = {}  # type: dict(str, dict) # host_name -> endpoint config
 
         for stream in topo.config_streams:
             if stream["sender"] not in configs:

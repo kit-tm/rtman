@@ -1,11 +1,8 @@
 import sys
 
 from odl_client.base_odlclient.openflow import FlowTableEntry
-from odl_client.base_odlclient.openflow.action import PushMPLSAction, SwapMPLSAction, ChangeDstIPAction, ChangeDstMacAction, \
-    OutputAction, PopMPLSAction, SetQueueAction
-from odl_client.base_odlclient.openflow.base import ETHERTYPE_IP4
+from odl_client.base_odlclient.openflow.action import OutputAction, SetQueueAction
 from odl_client.base_odlclient.openflow.instruction import Actions
-from odl_client.base_odlclient.openflow.match import BaseMatch
 from demonstrators.etfa_2019.etfa_demo_scheduling.schedule.node_wrapper import ETFA2019Topology
 from odl_client.irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, Configuration
 from odl_client.irt_odlclient.tas_handler import TASEntry
@@ -178,7 +175,7 @@ class ETFA2019Scheduler(Scheduler):
             for i in range(1, max( len(path) for path in pathset.values() )-1):
 
                 hops = {}
-                for partialstream, path in pathset.items():  # type: (IRTPartialStream, List[NodeWrapper])
+                for partialstream, path in pathset.items():  # type: (IRTPartialStream, list(NodeWrapper))
                     if len(path) > i:  # assert there are path[i] and path[i+1]. otherwise, this path is not of interest
                         hop = (path[i], path[i+1])
                         if hop in hops:
@@ -216,8 +213,7 @@ class ETFA2019Scheduler(Scheduler):
         } # tas_entry_builder[connector_id][queue_id] == {(1,2), (4,5)}
 
         for multistream_name, multistream_tps_by_switch in self._schedule.transmission_points_by_multistream_by_switch.items():
-            mpls_label = self.get_multistream_mpls_label(multistream_name)
-            for switch_name, tps in multistream_tps_by_switch.items():  # type: str, set[MPLSTransmissionPoint]
+            for switch_name, tps in multistream_tps_by_switch.items():  # type: str, set(MPLSTransmissionPoint)
 
                 # ETFA_CHANGE we need to use trustnode-fpga-based matches and actions:
                 # udp or tcp dest port, dest ip, ip-proto, ethertype for match
@@ -281,8 +277,8 @@ class ETFA2019Scheduler(Scheduler):
         ### Phase 2: dijkstra initialization
 
         # all nodes have maximum distance and no predecessor
-        distance = {switch.node_id: sys.maxsize for switch in self._topology.switches}  # type: dict[str, int]
-        prev_node = {switch.node_id: None for switch in self._topology.switches}  # type: dict[str, CostBasedSwitch]
+        distance = {switch.node_id: sys.maxsize for switch in self._topology.switches}  # type: dict(str, int)
+        prev_node = {switch.node_id: None for switch in self._topology.switches}  # type: dict(str, CostBasedSwitch)
 
         # start node has no cost to self
         distance[source_switch.node_id] = 0
@@ -291,7 +287,7 @@ class ETFA2019Scheduler(Scheduler):
         # this marks the beginning of the path when following prev_node from destination to source later.
 
         # set of all non-visited nodes
-        Q = self._topology.switches  # type: list[CostBasedSwitch]
+        Q = self._topology.switches  # type: list(CostBasedSwitch)
 
         ### Phase 2.1 re-use existing paths
 

@@ -20,7 +20,7 @@ class UNIServer(object):
     __slots__ = ("_uni_clients", )
 
     def __init__(self):
-        self._uni_clients = []  # type: list[UNIClient]
+        self._uni_clients = []  # type: list(UNIClient)
 
     def cumulative_join(self, *args):
         """

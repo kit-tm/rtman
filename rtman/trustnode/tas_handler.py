@@ -1,14 +1,14 @@
 import fractions
 import logging
 import time
-from threading import Lock, Event, Thread
+from threading import Event, Thread
 from time import sleep
 from odl_client.base_odlclient.requestlog import RequestLogEntry, HTTPLogEntry
 
 import numpy
 
 from odl_client.base_odlclient.odlclient import APIException
-from odl_client.irt_odlclient.tas_handler import NETCONF_Node, NETCONF_TASHandler, TASEntry
+from odl_client.irt_odlclient.tas_handler import NETCONF_Node, NETCONF_TASHandler
 
 
 class UnsupportedInterfaceException(Exception):

@@ -1,4 +1,3 @@
-import json
 from mininet.topo import Topo
 
 class DescriptionTopo(Topo):

@@ -1,5 +1,3 @@
-import json
-
 from odl_client.base_odlclient.openflow.action import Action
 from odl_client.base_odlclient.openflow.instruction import Instruction
 from odl_client.base_odlclient.openflow.match import Match

@@ -6,7 +6,6 @@ a global transmission cycle time is set.
 """
 import logging
 
-from odl_client.base_odlclient.node import Host, Switch
 from odl_client.irt_odlclient.schedule.node_wrapper import SwitchConnectorWrapper, SwitchWrapper
 from odl_client.reserving_odlclient.stream import MultiStream, PartialStream
 from odl_client.irt_odlclient.schedule.node_wrapper import Topology
@@ -35,7 +34,7 @@ class Schedule(object):
 
     def __init__(self, scheduler):
         self._scheduler = scheduler
-        self._transmission_points = set()  # type: Set[TransmissionPoint]
+        self._transmission_points = set()  # type: set(TransmissionPoint)
         self._cache_invalid = True
         self._cycle_length = scheduler.cycle_length
 
@@ -200,8 +199,8 @@ class TransmissionPoint(object):
 
     def __init__(self, switch_connector, partial_streams, transmission_times):
         self._switch_connector = switch_connector  # type: SwitchConnectorWrapper
-        self._partial_streams = partial_streams  # type: set[PartialStream]
-        self._transmission_times = transmission_times  # type: Iterable[Tuple[int, int]]
+        self._partial_streams = partial_streams  # type: set(PartialStream)
+        self._transmission_times = transmission_times  # type: Iterable(tuple(int, int))
 
     @property
     def switch_connector(self):
@@ -351,7 +350,6 @@ class Scheduler(object):
         """
         called whenever odl_client._build_nodes is executed, and new switches or connectors were found.
         Allows the scheduler to react to this event.
-        :param odl_client:
         :return:
         """
         self._topology = self.TOPOLOGY_CLS(self._odl_client)
@@ -425,8 +423,6 @@ class Scheduler(object):
         do SDN/TAS splitting
         generate set of flows
 
-        :param Schedule old_schedule: old schedule (which is currently active in network)
-        :param iterable[IRTPartialStream] partialstreams: partial streams to be provided in the new schedule.
         :return: set of all flows for these partial streams
         :rtype: Configuration
         """

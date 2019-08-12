@@ -1,5 +1,5 @@
 from odl_client.base_odlclient.openflow import FlowTableEntry
-from odl_client.base_odlclient.openflow.action import DropFrameAction, ChangeDstIPAction
+from odl_client.base_odlclient.openflow.action import DropFrameAction
 from odl_client.base_odlclient.openflow.base import IPPROTOCOL_UDP
 from odl_client.base_odlclient.openflow.instruction import Actions
 from odl_client.irt_odlclient.tas_handler import TASHandler

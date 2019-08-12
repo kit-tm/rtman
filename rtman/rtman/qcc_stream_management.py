@@ -1,13 +1,13 @@
 import time
 from threading import RLock
 
-from ieee802dot1qcc.common import InterfaceID
 from ieee802dot1qcc.interfaceconfig import InterfaceConfiguration
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.status import Status, StatusInfo, TalkerStatus, ListenerStatus, FailureCode
 from ieee802dot1qcc.talker import Talker
 from ieee802dot1qcc.dataframespec import IEEE802MacAddresses, IEEE802VlanTag, IPv4Tuple, IPv6Tuple, PROTOCOL_TCP, \
     PROTOCOL_UDP, UncheckedIPv4Tuple
+from odl_client.base_odlclient.node import Host
 from odl_client.base_odlclient.requestlog import UNILogEntry
 
 from odl_client.irt_odlclient.stream import IRTMultiStream, IRTPartialStream, RegularTransmissionSchedule
@@ -278,9 +278,9 @@ class QccStreamManager(object):
     def __init__(self, odl_client):
         self._lock = RLock()
         self._odl_client = odl_client
-        self._talker_associations = {}  # type: dict[str, tuple[Talker, QccMultiStream]]
-        self._listener_associations = {}  # type: dict[str, set[tuple[Listener, QccPartialStream]]]
-        self._listeners_waiting = {}  # type: dict[str, set[Tupele[Listener, Host]]]
+        self._talker_associations = {}  # type: dict(str, tuple(Talker, QccMultiStream))
+        self._listener_associations = {}  # type: dict(str, set(tuple(Listener, QccPartialStream)))
+        self._listeners_waiting = {}  # type: dict(str, set(tuple(Listener, Host)))
 
     def add_talker(self, talker, sender):
         """

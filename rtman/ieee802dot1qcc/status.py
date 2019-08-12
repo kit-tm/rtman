@@ -1,6 +1,8 @@
 from common import StreamID, InterfaceID
 from enum import Enum
 
+from ieee802dot1qcc.interfaceconfig import InterfaceConfiguration
+from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.talker import Talker
 
 
@@ -55,7 +57,7 @@ class Status(object):
         "_status_info",  # type: StatusInfo
         "_accumulated_latency",  # type: int
         "_interface_configuration",  # type: InterfaceConfiguration
-        "_failed_interfaces",  # type: iterable[InterfaceID]
+        "_failed_interfaces",  # type: iterable(InterfaceID)
         "_associated_talkerlistener"  # type: Talker or Listener
     )
 

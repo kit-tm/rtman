@@ -192,7 +192,6 @@ class ReservingODLClient(ODLClient):
         Default behavior is to generate flows for each stream individually with _generate_flowset_for_stream
         The default implementation uses this function;
         overriding this function may lead to _generate_flowset_for_stream becoming unused (which may be intended).
-        :param flow_priority:
         :return: list of flow table entries
         :rtype: iterable[FlowTableEntry]
         """

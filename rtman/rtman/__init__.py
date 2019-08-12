@@ -3,12 +3,11 @@ import subprocess
 import traceback
 from threading import Lock
 
-from ieee802dot1qcc import UNIServer, UNIClient
+from ieee802dot1qcc import UNIServer
 from ieee802dot1qcc.exception import EndStationInterfaceNotExisting
 from ieee802dot1qcc.listener import Listener
 from ieee802dot1qcc.talker import Talker
 from odl_client.base_odlclient.node import SwitchConnector, Host
-from odl_client.dijkstra_based_iterative_reserving.schedule import DijkstraBasedScheduler
 from misc.interactive_console import get_console
 from odl_client.irt_odlclient.odlclient import IRTOdlClient
 import json
@@ -32,12 +31,10 @@ class RTman(UNIServer):
 
     def __init__(self, odl_client, wireshark_script=None, web_address="localhost", web_port=8080):
         """
-        :param args: args for ODLClient
         :param Tuple[str, str] wireshark_script: path to a script that takes an interface name as argument and launches wireshark
         for that interface
         :param str web_address: Address/hostname to use when binding TCP socket for web server
         :param int web_port: TCP port for web server
-        :param kwargs: kwargs for ODLClient.
         """
         self._wireshark_script = wireshark_script
         self._odl_client = odl_client  # type: IRTOdlClient

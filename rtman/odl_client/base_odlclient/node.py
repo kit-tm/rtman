@@ -91,7 +91,6 @@ class ODLNode(object):
 
         :param ODLClient odlclient: ODLClient object this node is associated with
         :param str node_id: identifier of the node in the ODL Client
-        :param class connector_cls: class used for connectors of this node
         """
         self._node_id = node_id
         self._odlclient = odlclient
@@ -206,7 +205,6 @@ class Host(ODLNode):
 
         :param odlclient:
         :param dict topology_dict: data structure in ODL topology that describes this host
-        :param connector_cls:
         """
         self._connector = None
         super(Host, self).__init__(odlclient, topology_dict["node-id"])
@@ -302,7 +300,7 @@ class SwitchConnector(ODLNodeConnector):
     def _update(self, inventory_dict):
         """
         read inventory dict and extract required information. called curing construction and to be overridden.
-        :param dict topology_dict:
+        :param dict inventory_dict:
         :return: None
         """
         new_interface = inventory_dict["flow-node-inventory:name"]
@@ -347,7 +345,6 @@ class Switch(ODLNode):
 
         :param odlclient:
         :param dict inventory_dict: ODL inventory data representing this node
-        :param connector_cls:
         """
         super(Switch, self).__init__(odlclient, inventory_dict["id"])
         self._connectors = {}
@@ -356,7 +353,7 @@ class Switch(ODLNode):
     def _update(self, inventory_dict):
         """
         read inventory dict and extract required information. called curing construction and to be overridden.
-        :param dict topology_dict:
+        :param dict inventory_dict:
         :return: whether a new or deleted connection has been found
         :rtype: bool
         """

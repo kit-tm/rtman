@@ -4,14 +4,16 @@ from ieee802dot1qcc.status import FailureCode
 from odl_client.base_odlclient.openflow import FlowTableEntry
 from odl_client.base_odlclient.openflow.action import SetQueueAction, OutputAction
 from odl_client.base_odlclient.openflow.instruction import Actions
-from odl_client.irt_odlclient.schedule import Schedule, Scheduler, TransmissionPoint, SwitchConnectorWrapper, \
+from odl_client.irt_odlclient.schedule import Schedule, Scheduler, SwitchConnectorWrapper, \
     Configuration
 
 # number nanoseconds of a transmission slot.
-from odl_client.irt_odlclient.schedule.node_wrapper import HostWrapper
+from odl_client.irt_odlclient.schedule.node_wrapper import HostWrapper, NodeWrapper
+from odl_client.irt_odlclient.stream import IRTPartialStream
 from odl_client.irt_odlclient.tas_handler import TASEntry
 from schedulers.dijkstra_earliesttransmission_udptuplematching.slotted_transmission_topology import \
-    SlottedTransmissionTopology, SlottedTransmissionSwitchConnectorWrapper, RemovablePartialstreamsTransmissionPoint
+    SlottedTransmissionTopology, SlottedTransmissionSwitchConnectorWrapper, RemovablePartialstreamsTransmissionPoint, \
+    SlottedTransmissionSwitchWrapper
 
 # number nanoseconds per transmission slot
 TRANSMISSION_SLOT_LENGTH = 1000000  # 1ms
@@ -107,8 +109,8 @@ class EarliestTransmissionUdpRoutingDijkstraScheduler(Scheduler):
         ### Phase 2: dijkstra initialization
 
         # all nodes have maximum distance and no predecessor
-        distance = {switch.node_id: sys.maxsize for switch in self._topology.switches}  # type: dict[str, int]
-        prev_node = {switch.node_id: None for switch in self._topology.switches}  # type: dict[str, CostBasedSwitch]
+        distance = {switch.node_id: sys.maxsize for switch in self._topology.switches}  # type: dict(str, int)
+        prev_node = {switch.node_id: None for switch in self._topology.switches}  # type: dict(str, SlottedTransmissionSwitchWrapper)
 
         # start node has no cost to self
         distance[source_switch.node_id] = 0
@@ -117,7 +119,7 @@ class EarliestTransmissionUdpRoutingDijkstraScheduler(Scheduler):
         # this marks the beginning of the path when following prev_node from destination to source later.
 
         # set of all non-visited nodes
-        Q = self._topology.switches  # type: list[CostBasedSwitch]
+        Q = self._topology.switches  # type: list(SlottedTransmissionSwitchWrapper)
 
         ### Phase 2.1 re-use existing paths
 
@@ -247,7 +249,7 @@ class EarliestTransmissionUdpRoutingDijkstraScheduler(Scheduler):
             hops_to_partialstreams = {}
             hops_to_predecessor = {}
             for i in range(1, max( len(path) for path in pathset.values() )-1):
-                for partialstream, path in pathset.items():  # type: (IRTPartialStream, List[NodeWrapper])
+                for partialstream, path in pathset.items():  # type: (IRTPartialStream, list(NodeWrapper))
                     if len(path) > i:  # assert that i is not last in path. otherwise, skip this as we are at destination.
                         hop = (path[i], path[i+1])
                         if hop in hops_order:

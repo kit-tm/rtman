@@ -1,3 +1,4 @@
+from ieee802dot1qcc import UNIClient
 from ieee802dot1qcc.common import StreamID, UserToNetworkRequirements, InterfaceID, InterfaceCapabilities
 from ieee802dot1qcc.dataframespec import DataFrameSpecification
 from ieee802dot1qcc.trafficspec import TrafficSpecification

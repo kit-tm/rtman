@@ -16,8 +16,6 @@ class RegularTransmissionSchedule(object):
         """
 
         :param int frame_size: maximum frame size in bytes
-        :param int interarrival_time: inter-arrival time of frames in ns
-        :param int offset: arrival time offset in ns (time until first transmission after network synchronized tick)
         """
         super(RegularTransmissionSchedule, self).__init__()
         self._frame_size = frame_size

@@ -1,5 +1,5 @@
-from odl_client.base_odlclient.node import ODLNode, Switch, Host, ODLNodeConnector, SwitchConnector, HostConnector
-from odl_client.irt_odlclient.node import CapacityBasedSwitchConnector
+from odl_client.base_odlclient.node import ODLNode, Switch, Host
+from odl_client.irt_odlclient.node import CapacityBasedHostConnector
 
 """
 A set of objects that behave like their actual representations in odl_client,
