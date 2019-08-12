@@ -75,6 +75,6 @@ class TSpecTimeAware(TrafficSpecification):
             "latest_transmit_offset": self._latest_transmit_offset,
             "jitter": self._jitter
         })
-
+        return r
 
 
