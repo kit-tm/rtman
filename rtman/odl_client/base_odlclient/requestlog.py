@@ -3,17 +3,18 @@ Logging of JSON requests to ODL
 Data is stored only every x seconds to limit resource usage
 """
 import base64
-import datetime
 import json
 import logging
 import time
-from threading import Lock, Thread, Event
+from Queue import Queue
+from threading import Thread, Event
 
-# in seconds
 from ieee802dot1qcc.status import Status
 from ieee802dot1qcc.talker import Talker
 
+# in seconds
 LOG_WAIT_BEFORE_SAVE = 7.0
+
 
 class NoLogger(object):
     def __init__(self):
@@ -33,6 +34,7 @@ class LogEntry(object):
     @property
     def json(self):
         return {"type": None}
+
 
 class UNILogEntry(object):
     __slots__ = (
@@ -102,7 +104,8 @@ class RequestLogEntry(LogEntry):
             "body": self.body
         }
 
-class ResponseLogEntry(object):
+
+class ResponseLogEntry(LogEntry):
     __slots__ = ("timestamp", "status_code", "headers", "body")
 
     def __init__(self, timestamp, status_code=None, headers=None, body=None):
@@ -141,17 +144,46 @@ class HTTPLogEntry(LogEntry):
         }
 
 
+class RTmanStartEntry(LogEntry):
+    __slots__ = ("timestamp",)
+
+    def __init__(self, timestamp):
+        super(RTmanStartEntry, self).__init__()
+        self.timestamp = timestamp
+
+    @property
+    def json(self):
+        return {
+            "timestamp": self.timestamp,
+            "type": "RTman_start"
+        }
+
+
+class RTmanStopEntry(LogEntry):
+    __slots__ = ("timestamp",)
+
+    def __init__(self, timestamp):
+        super(RTmanStopEntry, self).__init__()
+        self.timestamp = timestamp
+
+    @property
+    def json(self):
+        return {
+            "timestamp": self.timestamp,
+            "type": "RTman_stop"
+        }
+
+
 class JSONLogger(NoLogger):
-    __slots__ = ("_log_entries", "_storing_lock", "_storing_thread", "_filename", "_stop_event", "_data_changed")
+    __slots__ = ("_log_entry_queue", "_storing_thread", "_filename", "_write_event", "_is_running")
 
     def __init__(self, log_filename):
+        self._is_running = True
         super(JSONLogger, self).__init__()
-        self._log_entries = []
-        self._storing_lock = Lock()
         self._filename = log_filename
         logging.info("writing request log to %s" % self._filename)
-        self._stop_event = Event()
-        self._data_changed = False
+        self._write_event = Event()
+        self._log_entry_queue = Queue()
         self._storing_thread = Thread(target=self._save_log)
         self._storing_thread.start()
 
@@ -204,26 +236,27 @@ class JSONLogger(NoLogger):
         self.add_logentry(log_entry)
 
     def add_logentry(self, log_entry):
-        self._log_entries.append(log_entry.json)
-        with self._storing_lock:
-            self._data_changed = True
+        self._log_entry_queue.put(log_entry.json)
+        self._write_event.set()
 
     def stop(self):
-        self._stop_event.set()
+        self._is_running = False
+        self._write_event.set()
 
     def _current_time_millis(self):
         return self._time_to_millis(time.time())
 
     def _save_log(self):
-        while True:
-            stop = self._stop_event.wait(LOG_WAIT_BEFORE_SAVE)
-            with self._storing_lock:
-                if self._data_changed:
-                    with open(self._filename, 'w') as f:
-                        json.dump(self._log_entries, f, sort_keys=True, indent=2)
-                    self._data_changed = False
-            if stop:
-                return
+        with open(self._filename, 'w') as f:
+            f.write("[" + json.dumps(RTmanStartEntry(self._current_time_millis()).json))
+            while self._is_running:
+                self._write_event.wait(LOG_WAIT_BEFORE_SAVE)
+                self._write_event.clear()
+                while not self._log_entry_queue.empty():
+                    entry_json = json.dumps(self._log_entry_queue.get())
+                    f.write("," + entry_json)
+                f.flush()
+            f.write("," + json.dumps(RTmanStopEntry(self._current_time_millis()).json) + "]")
 
     @staticmethod
     def _time_to_millis(t):
