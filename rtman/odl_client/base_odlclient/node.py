@@ -250,7 +250,6 @@ class Host(ODLNode):
             if ip not in iplist:
                 del self._known_addresses[ip]
 
-        validids = []
         if self._connector:
             topology_change_detected |= self._connector._update(
                 topology_dict["host-tracker-service:attachment-points"]
@@ -308,10 +307,11 @@ class SwitchConnector(ODLNodeConnector):
         """
         new_interface = inventory_dict["flow-node-inventory:name"]
         old_interface = self._interface
-        self._interface = new_interface
-        if self._interface == new_interface:
+        if old_interface == new_interface:
             return False
-        return True
+        else:
+            self._interface = new_interface
+            return True
 
 
     def invalidate(self):

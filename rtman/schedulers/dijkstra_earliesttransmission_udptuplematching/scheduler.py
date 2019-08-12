@@ -264,7 +264,6 @@ class EarliestTransmissionUdpRoutingDijkstraScheduler(Scheduler):
                 connector = switch.get_neighbor_connector(next_neighbor)  # type: SlottedTransmissionSwitchConnectorWrapper
 
                 prev_neighbor = hops_to_predecessor[(switch, next_neighbor)]
-                prev_slot = 0
                 if isinstance(prev_neighbor, HostWrapper):
                     prev_slot = prev_neighbor.connector.get_transmission_offset(multistream)
                 else:
@@ -349,7 +348,6 @@ class SlottedConfiguration(Configuration):
         for host in self._topology.hosts:
             hostentry = {}
             connector = host.connector
-            connectorentry = {}
             queue_id = 0
 
             connectorentry = {queue_id: [(m.name if m else None) for m in connector._multistream_transmissions]}
