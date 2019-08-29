@@ -77,7 +77,7 @@ class MacFix(IRTOdlClient):
         unsatisfied = self._macfix__mac_addresses.difference(observed_addresses)
         unexpected = observed_addresses.difference(self._macfix__mac_addresses)
         if len(unsatisfied) > 1:
-            raise AssertionError("unsatisfied: %s" % unsatisfied)
+            raise AssertionError("unsatisfied: %s -- 2 or more host MAC addresses could not be found. Are you using the correct topology file?" % unsatisfied)
         assert len(unexpected) == len(unsatisfied)
         if len(unsatisfied) == 1:
             self._macfix__result = {list(unsatisfied)[0]: list(unexpected)[0]}
