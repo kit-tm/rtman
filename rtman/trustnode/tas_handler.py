@@ -43,6 +43,8 @@ class TrustNode_Connector_TASconfig(object):
         self._connector_id = connector_id
         tn_connector_id = connector_id.split(":")[-1]
 
+        irt_queues = set((queue.queue_id for queue in switch_connector.irt_queues))
+
         if tn_connector_id == "LOCAL":
             for tas_entry in tas_entries:
                 if len(tas_entry.gate_open_intervals) > 0:
@@ -69,7 +71,7 @@ class TrustNode_Connector_TASconfig(object):
             state_changes[queue_id] = changes
 
         queue_ids = state_changes.keys
-        current_states = {queue.queue_id: True for queue in switch_connector.queues}
+        current_states = {queue.queue_id: (False if queue.queue_id in irt_queues else True) for queue in switch_connector.queues}
         states = {0: current_states.copy()}
         for timeslot in range(maximum+1):
             need_entry = False
