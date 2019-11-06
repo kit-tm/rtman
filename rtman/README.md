@@ -4,7 +4,7 @@ RTman
 Python Requirements
 -------------------
 
-For RTman to start, install the python packages `requests` and `jinja2`
+For RTman to start, install the python packages `requests`, `jinja2`, and `ifaddr`
   
 Package Overview
 ----------------
