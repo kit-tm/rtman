@@ -10,13 +10,12 @@ RUN apk add --no-cache curl procps tini && \
 	rm /odl.tar.gz
 
 # install karaf features
-WORKDIR /karaf-0.8.4/bin
-RUN ./start && \
-	sleep 10 && \
-	./client feature:install -v odl-l2switch-switch odl-restconf odl-restconf-all odl-netconf-connector-all odl-netconf-mdsal && \
-	./stop
+ARG ODL_FEATURES=odl-l2switch-switch,odl-restconf,odl-restconf-all,odl-netconf-connector-all,odl-netconf-mdsal
+
+WORKDIR /karaf-0.8.4
+RUN sed -i "/^featuresBoot =/ s/$/,${ODL_FEATURES}/" etc/org.apache.karaf.features.cfg
 
 # specify entrypoint
 COPY entrypoint.sh /karaf-0.8.4/bin/entrypoint.sh
 ENTRYPOINT [ "/sbin/tini", "--" ]
-CMD [ "./entrypoint.sh" ]
+CMD [ "bin/entrypoint.sh" ]
